@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,15 +37,15 @@ public class UserFileManager {
 			for(User user: userDatabase.values()) {
 				UserProfile profile = user.getProfileInfo();
 				
-				String data = String.format("%s|%s|%s|%s|%s|%s",
+				String data = String.format("%s|%s|%s|%s|%s|%s|%s|%s",
 											user.getEmail(),
 											user.getPasswordHash(),
 											user.getAccountTier(),
 											profile.getUsername(),
 											profile.getBio(),
 											profile.getPhoneNumber(),
-											profile.getAadharNumber() != null ? profile.getAadharNumber() : "",
-											profile.getBankDetails() != null ? profile.getBankDetails() : "");
+											profile.getAadharNumber() != null ? profile.getAadharNumber() : " ",
+											profile.getBankDetails() != null ? profile.getBankDetails() : " ");
 				writer.write(data);
 				writer.newLine();
 			}
@@ -69,6 +70,8 @@ public class UserFileManager {
 			String line;
 			while((line = reader.readLine()) != null) {
 				String[] parts = line.split("\\|", -1);
+				
+				System.out.print(Arrays.toString(parts));
 				
 				if(parts.length >= 7) {
 					String email = parts[0];
