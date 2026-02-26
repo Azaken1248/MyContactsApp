@@ -1,6 +1,14 @@
 package com.seveneleven.mycontactapp.main;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
+import com.seveneleven.mycontactapp.auth.Authentication;
+import com.seveneleven.mycontactapp.auth.session.SessionManager;
+import com.seveneleven.mycontactapp.auth.strategy.BasicAuthStrategy;
+import com.seveneleven.mycontactapp.auth.strategy.OAuthStrategy;
 import com.seveneleven.mycontactapp.user.model.User;
 import com.seveneleven.mycontactapp.user.model.UserBuilder;
 import com.seveneleven.mycontactapp.user.model.UserProfile;
@@ -21,9 +29,11 @@ public class MyContactsApp {
 	
 	private static final Scanner scanner = new Scanner(System.in);
 	private static final PasswordHasher hasher = new PasswordHasher();
+	private static final Map<String, User> userDatabase = new HashMap<>();
 	
-	private static User loggedInUser = null;
-	
+	/**
+	 * Register the user to the application
+	 */
 	public static void performRegistration() {
 		scanner.nextLine();
 		System.out.print("Enter Email: ");
@@ -61,6 +71,8 @@ public class MyContactsApp {
 											.setUserType(type.toUpperCase())
 											.build();
 			
+			userDatabase.put(newUser.getEmail(), newUser);
+			
 			System.out.println("------User Registered-------");
 			System.out.println("Email: " + newUser.getEmail());
 			System.out.println("Password Hash: " + newUser.getPasswordHash());
@@ -72,9 +84,49 @@ public class MyContactsApp {
 		}catch(Exception e) {
 			System.out.println("Unexpected error occured: " + e.getMessage());
 		}
+	}
+	
+	/**
+	 * Log in the user to the application
+	 */
+	public static void performLogin() {
+		System.out.println("\n---Login---");
 		
+		scanner.nextLine();
 		
+		System.out.print("Enter Email: ");
+		String email = scanner.nextLine();
 		
+		System.out.println("Select Auth method: ");
+		System.out.println("1. Password");
+		System.out.println("2. OAuth Token");
+		
+		System.out.print("Choice: ");
+		String method = scanner.nextLine();
+		
+		Authentication authStrategy;
+		String secret;
+		
+		if("2".equals(method)) {
+			authStrategy = new OAuthStrategy(userDatabase);
+			
+			System.out.print("Enter OAuth token: ");
+			secret = scanner.nextLine();
+		}else {
+			authStrategy = new BasicAuthStrategy(userDatabase, hasher);
+			
+			System.out.print("Enter password: ");
+			secret = scanner.nextLine();
+		}
+		
+		Optional<User> loginResult = authStrategy.authenticate(email, secret);
+		
+		if(loginResult.isPresent()) {
+			SessionManager.getInstance().loginUser(loginResult.get());
+			System.out.println("Login Successful");
+		}else {
+			System.out.println("Login Failed: Please enter valid credentials");
+		}
 		
 	}
 	
@@ -84,7 +136,7 @@ public class MyContactsApp {
 	 * @return user intent as a boolean
 	 */
 	public static boolean handleGuestMenu() {
-		System.out.println("---Guest Menu---");
+		System.out.println("\n---Guest Menu---");
 		System.out.println("1. Register");
 		System.out.println("2. Login");
 		System.out.println("0. Exit");
@@ -100,8 +152,7 @@ public class MyContactsApp {
 				yield true;
 			}
 			case 2 -> {
-				// TODO: Implement Authentication and login
-				System.out.println("Login will be implemented soon");
+				performLogin();
 				yield true;
 			}
 			
@@ -118,6 +169,38 @@ public class MyContactsApp {
 	}
 	
 	/**
+	 * Handles the menu after the user is logged in
+	 * 
+	 * @return user intent as a boolean
+	 */
+	public static boolean handleUserMenu() {
+		User activeUser = SessionManager.getInstance().getCurrentUser().get();
+		System.out.println("\n---Main Menu (Logged in as " + activeUser.getEmail() +")---");
+		System.out.println("1. Profile Management");
+		System.out.println("0. logout");
+
+		System.out.print("Enter Choice: ");
+		int input = scanner.nextInt();
+		
+		return switch(input) {
+			case 1 -> {
+				System.out.println("Profile Info:-\n" + activeUser.getProfileInfo().toString());
+				yield true;
+			}
+			case 0 -> {
+				System.out.println("Logging out...");
+				SessionManager.getInstance().logoutUser();
+				yield true;
+			}
+			default -> {
+				System.out.println("Invalid Choice!!");
+				yield true;
+			}
+		};
+		
+	}
+	
+	/**
 	 * Main method that starts the main application loop
 	 * @param args
 	 */
@@ -127,8 +210,10 @@ public class MyContactsApp {
 		boolean isRunning = true;
 		
 		while(isRunning) {
-			if(loggedInUser == null) {
+			if(!SessionManager.getInstance().isLoggedIn()) {
 				isRunning = handleGuestMenu();
+			}else {
+				isRunning = handleUserMenu();
 			}
 		}
 		
