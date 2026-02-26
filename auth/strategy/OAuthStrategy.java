@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Map;
 
 import com.seveneleven.mycontactapp.auth.Authentication;
+import com.seveneleven.mycontactapp.auth.providers.AuthProvider;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -36,21 +37,16 @@ public class OAuthStrategy implements Authentication{
 			return Optional.empty();
 		}
 		
-		if(isValidOAuthToken(token)) {
-			return Optional.of(user); // Login Success
+		if(!"PREMIUM".equalsIgnoreCase(user.getAccountTier())) {
+			System.out.println("Only premium accounts can access the OAuth facility");
+			return Optional.empty();
+		}
+		
+		if(AuthProvider.isValidToken(token, email)) {
+			return Optional.of(user);
 		}
 		
 		return Optional.empty(); // Login Failed
-	}
-	
-	/**
-	 * Dummy helper method to validate the OAuth token
-	 * 
-	 * @param token	Token given by token provider
-	 * @return	If the token is valid or not
-	 */
-	private boolean isValidOAuthToken(String token) {
-		return token != null && token.startsWith("contacts_");
 	}
 
 }
