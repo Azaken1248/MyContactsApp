@@ -64,10 +64,6 @@ public class UserProfile {
 	 * @param aadharNumber	Aadhar number of the user
 	 */
 	public void setAadharNumber(String aadharNumber) {
-		if(aadharNumber == null || aadharNumber.trim().isEmpty()) {
-			throw new IllegalArgumentException("The aadhar number cannot be empty!!");
-		}
-		
 		this.aadharNumber = aadharNumber;
 	}
 	
@@ -77,10 +73,6 @@ public class UserProfile {
 	 * @param aadharNumber	Bank Details of the user
 	 */
 	public void setBankDetails(String bankDetails) {
-		if(bankDetails == null || bankDetails.trim().isEmpty()) {
-			throw new IllegalArgumentException("The bank details cannot be empty!!");
-		}
-		
 		this.bankDetails = bankDetails;
 	}
 	
