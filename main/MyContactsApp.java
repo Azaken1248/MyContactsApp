@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import com.seveneleven.mycontactapp.auth.Authentication;
+import com.seveneleven.mycontactapp.auth.providers.AuthProvider;
 import com.seveneleven.mycontactapp.auth.session.SessionManager;
 import com.seveneleven.mycontactapp.auth.strategy.BasicAuthStrategy;
 import com.seveneleven.mycontactapp.auth.strategy.OAuthStrategy;
@@ -97,9 +98,24 @@ public class MyContactsApp {
 		System.out.print("Enter Email: ");
 		String email = scanner.nextLine();
 		
+		User userLoginAttempt = userDatabase.get(email);
+		
+		if(userLoginAttempt == null) {
+			System.out.println("User not found. Please register first!!");
+			return;
+		}
+		
+		boolean isPremium = "PREMIUM".equalsIgnoreCase(userLoginAttempt.getAccountTier());
+		
 		System.out.println("Select Auth method: ");
 		System.out.println("1. Password");
-		System.out.println("2. OAuth Token");
+		
+		if(isPremium) {
+			System.out.println("2. OAuth Token (AuthProvider) [Unlocked]");
+		}else {
+			System.out.println("2. OAuth Token (AuthProvider) [Locked - Premium only]");
+		}
+		
 		
 		System.out.print("Choice: ");
 		String method = scanner.nextLine();
@@ -108,9 +124,19 @@ public class MyContactsApp {
 		String secret;
 		
 		if("2".equals(method)) {
+			if(!isPremium) {
+				System.out.println("You must be a premium user to access OAuth services. Please use password instead.");
+				return;
+			}
+			
+			System.out.println("\n[Redirecting to AuthProvider...]");
+			String generatedToken = AuthProvider.generateToken(email);
+			System.out.println("[AuthProvider] Authentication Successful. Your token is " + generatedToken);
+			System.out.println("[Redirecting back to MyContactsApp.....]");
+			
 			authStrategy = new OAuthStrategy(userDatabase);
 			
-			System.out.print("Enter OAuth token: ");
+			System.out.print("Please paste your OAuth Token to finalize login: ");
 			secret = scanner.nextLine();
 		}else {
 			authStrategy = new BasicAuthStrategy(userDatabase, hasher);
