@@ -47,6 +47,19 @@ public abstract class User {
 	public UserProfile getProfileInfo() { return profileInfo; }
 	
 	/**
+	 * Method to update/reset the password of the user
+	 * 
+	 * @param newPasswordHash	Hash of the new password
+	 */
+	public void setPasswordHash(String newPasswordHash) {
+		if(newPasswordHash == null || newPasswordHash.trim().isEmpty()) {
+			throw new IllegalArgumentException("Invalid password hash.");
+		}
+		
+		this.passwordHash = newPasswordHash;
+	}
+	
+	/**
 	 * Abstract method to get the tier/type of user
 	 * 
 	 * @return The type of account the user has which can be free or premium (String)
