@@ -42,7 +42,9 @@ public class UserFileManager {
 											user.getAccountTier(),
 											profile.getUsername(),
 											profile.getBio(),
-											profile.getPhoneNumber());
+											profile.getPhoneNumber(),
+											profile.getAadharNumber() != null ? profile.getAadharNumber() : "",
+											profile.getBankDetails() != null ? profile.getBankDetails() : "");
 				writer.write(data);
 				writer.newLine();
 			}
@@ -68,18 +70,23 @@ public class UserFileManager {
 			while((line = reader.readLine()) != null) {
 				String[] parts = line.split("\\|", -1);
 				
-				if(parts.length >= 5) {
+				if(parts.length >= 7) {
 					String email = parts[0];
 					String passwordHash = parts[1];
 					String accountType = parts[2];
 					String username = parts[3];
 					String bio = parts[4];
 					String phoneNumber = parts[5];
+					String aadharNumber = parts[6];
+					String bankDetails = parts[7];
 					
 					UserProfile profile = new UserProfileBuilder().setUsername(username)
 																  .setBio(bio)
 																  .setPhoneNumber(phoneNumber)
 																  .build();
+					profile.setAadharNumber(aadharNumber);
+					profile.setBankDetails(bankDetails);
+					
 					User user = new UserBuilder().setEmail(email)
 												 .setPasswordHash(passwordHash)
 												 .setProfileInfo(profile)

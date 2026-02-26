@@ -11,6 +11,14 @@ public class AuthProvider {
 	// Stores all active tokens
 	private final static Map<String, String> activeTokens = new HashMap<>();
 	
+	// Acts as the data store for gov servers
+	private final static Map<String, ExternalData> providerDatabase = new HashMap<>();
+	
+	static {
+		// Add dummy data
+		providerDatabase.put("rohit@gmail.com", new ExternalData("2161-6729-3627", "HDFC-Acct-998877"));
+		providerDatabase.put("rahul@gmail.com", new ExternalData("8384-2795-9970", "SBI-Acct-112233"));
+	}
 	/**
 	 * A function to generate OAuth Tokens
 	 * 
@@ -36,5 +44,54 @@ public class AuthProvider {
 		String registeredEmail = activeTokens.get(token);
 		
 		return registeredEmail != null && registeredEmail.equals(email);
+	}
+	
+	/**
+	 * Acts as a resource endpoint from provider
+	 * 
+	 * @param token	OAuth token of the user
+	 * @return	return the relevant data from the database (ExternalData)
+	 */
+	public static ExternalData fetchSensitiveData(String token) {
+		String email = activeTokens.get(token);
+		if(email != null) {
+			return providerDatabase.get(email);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Inner class to emulate secure data transfer from Gov servers to ContactApp
+	 */
+	public static class ExternalData {
+		private final String aadharNumber;
+		private final String bankDetails;
+		
+		/**
+		 * Constructor to instantiate the ExternalData
+		 * 
+		 * @param aadharNumber aadhar number of the user
+		 * @param bankDetails	bank details of the user
+		 */
+		public ExternalData(String aadharNumber, String bankDetails) {
+			this.aadharNumber = aadharNumber;
+			this.bankDetails = bankDetails;
+		}
+		
+		/**
+		 * Get the Aadhar number
+		 * 
+		 * @return	aadharNumber (String)
+		 */
+		public String getAadharNumber() { return aadharNumber; }
+		
+		/**
+		 * Get the bank details
+		 * 
+		 * @return bankDetails (String)
+		 */
+		public String getBankDetails() { return bankDetails; }
+		
 	}
 }

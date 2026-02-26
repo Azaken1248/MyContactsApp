@@ -202,6 +202,8 @@ public class MyContactsApp {
 	 */
 	public static boolean handleUserMenu() {
 		User activeUser = SessionManager.getInstance().getCurrentUser().get();
+		UserProfile profile = activeUser.getProfileInfo();
+		
 		System.out.println("\n---Main Menu (Logged in as " + activeUser.getEmail() +")---");
 		System.out.println("1. Profile Management");
 		System.out.println("0. logout");
@@ -212,6 +214,13 @@ public class MyContactsApp {
 		return switch(input) {
 			case 1 -> {
 				System.out.println("Profile Info:-\n" + activeUser.getProfileInfo().toString());
+				
+				if(profile.getAadharNumber() != null && profile.getBankDetails() != null) {
+					System.out.println("Linked Aadhar: " + profile.getAadharNumber());
+					System.out.println("Linked Bank: " + profile.getBankDetails());
+				} else {
+					System.out.println("[Message] Login using AuthProvider to link bank and aadhar detials");
+				}
 				yield true;
 			}
 			case 0 -> {

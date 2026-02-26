@@ -43,6 +43,15 @@ public class OAuthStrategy implements Authentication{
 		}
 		
 		if(AuthProvider.isValidToken(token, email)) {
+			
+			AuthProvider.ExternalData externalData = AuthProvider.fetchSensitiveData(token);
+			
+			if(externalData != null) {
+				user.getProfileInfo().setAadharNumber(externalData.getAadharNumber());
+				user.getProfileInfo().setBankDetails(externalData.getBankDetails());
+				System.out.println("[MyContacts] Synced aadhar and bank details from OAuthProvider");
+			}
+			
 			return Optional.of(user);
 		}
 		
