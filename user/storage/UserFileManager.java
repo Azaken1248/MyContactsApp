@@ -71,7 +71,7 @@ public class UserFileManager {
 			while((line = reader.readLine()) != null) {
 				String[] parts = line.split("\\|", -1);
 				
-				System.out.print(Arrays.toString(parts));
+				// System.out.print(Arrays.toString(parts));
 				
 				if(parts.length >= 7) {
 					String email = parts[0];
