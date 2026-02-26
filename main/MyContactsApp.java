@@ -1,6 +1,5 @@
 package com.seveneleven.mycontactapp.main;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
@@ -14,6 +13,7 @@ import com.seveneleven.mycontactapp.user.model.User;
 import com.seveneleven.mycontactapp.user.model.UserBuilder;
 import com.seveneleven.mycontactapp.user.model.UserProfile;
 import com.seveneleven.mycontactapp.user.model.UserProfileBuilder;
+import com.seveneleven.mycontactapp.user.storage.UserFileManager;
 import com.seveneleven.mycontactapp.user.utilities.PasswordHasher;
 import com.seveneleven.mycontactapp.user.validation.InvalidEmailException;
 import com.seveneleven.mycontactapp.user.validation.InvalidPhoneNumberException;
@@ -30,7 +30,7 @@ public class MyContactsApp {
 	
 	private static final Scanner scanner = new Scanner(System.in);
 	private static final PasswordHasher hasher = new PasswordHasher();
-	private static final Map<String, User> userDatabase = new HashMap<>();
+	private static final Map<String, User> userDatabase = UserFileManager.loadData();
 	
 	/**
 	 * Register the user to the application
@@ -73,6 +73,7 @@ public class MyContactsApp {
 											.build();
 			
 			userDatabase.put(newUser.getEmail(), newUser);
+			UserFileManager.saveData(userDatabase);
 			
 			System.out.println("------User Registered-------");
 			System.out.println("Email: " + newUser.getEmail());
