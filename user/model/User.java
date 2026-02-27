@@ -1,5 +1,10 @@
 package com.seveneleven.mycontactapp.user.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.seveneleven.mycontactapp.contact.model.Contact;
+
 /**
  * An abstract class that represents a user in the contacts.
  * 
@@ -13,6 +18,7 @@ public abstract class User {
 	private String email;
 	private String passwordHash;
 	private UserProfile profileInfo;
+	private List<Contact> contacts;
 	
 	/**
 	 * Protected constructor to enforce object creation only via the UserBuilder.
@@ -23,6 +29,7 @@ public abstract class User {
 		this.email = builder.getEmail();
 		this.passwordHash = builder.getPasswordHash();
 		this.profileInfo = builder.getProfileInfo();
+		this.contacts = new ArrayList<>();
 	}
 	
 	/**
@@ -45,6 +52,13 @@ public abstract class User {
 	 * @return The information about the user profile (String)
 	 */
 	public UserProfile getProfileInfo() { return profileInfo; }
+	
+	/**
+	 * Get the contact list of the user.
+	 * 
+	 * @return The contact about the user profile (List\<Contact\>)
+	 */
+	public List<Contact> getContacts() { return contacts; }
 	
 	/**
 	 * Method to update/reset the password of the user
