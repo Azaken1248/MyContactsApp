@@ -19,6 +19,10 @@ import com.seveneleven.mycontactapp.contact.model.Organization;
 import com.seveneleven.mycontactapp.contact.model.Person;
 import com.seveneleven.mycontactapp.contact.model.PhoneNumber;
 import com.seveneleven.mycontactapp.contact.storage.ContactFileManager;
+import com.seveneleven.mycontactapp.contact.view.BasicContactView;
+import com.seveneleven.mycontactapp.contact.view.ContactView;
+import com.seveneleven.mycontactapp.contact.view.FullDetailsDecorator;
+import com.seveneleven.mycontactapp.contact.view.MetadataDecorator;
 import com.seveneleven.mycontactapp.user.command.ChangePasswordCommand;
 import com.seveneleven.mycontactapp.user.command.ProfileCommand;
 import com.seveneleven.mycontactapp.user.command.ProfileUpdateController;
@@ -300,6 +304,47 @@ public class MyContactsApp {
 
 		}
 	}
+	
+	/**
+	 * Format contact data into views
+	 * 
+	 * @param activeUser	The user whose list is being viewed
+	 */
+	public static void viewSpecificContactFlow(User activeUser) {
+		List<Contact> contacts = activeUser.getContacts();
+		
+		if(contacts.isEmpty()) {
+			System.out.println("Your address book is empty.");
+			return;
+		}
+		
+		System.out.println("\n---Your Address Book---");
+		for(int i = 0; i < contacts.size(); i++) {
+			System.out.println("[" + (i + 1) +"]" + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() + ")");
+		}
+		
+		System.out.print("\nEneter contact number to view detials (0 to cancel): ");
+		try {
+			int choice = Integer.parseInt(scanner.nextLine());
+			if(choice == 0) return;
+			
+			Optional<Contact> selectedContactOption = getContactByIndex(activeUser, choice - 1);
+			
+			if(selectedContactOption.isPresent()) {
+				Contact selectedContact = selectedContactOption.get();
+				
+				ContactView view = new BasicContactView(selectedContact);
+				view = new FullDetailsDecorator(view, selectedContact);
+				view = new MetadataDecorator(view, selectedContact);
+				
+				System.out.println("\n" + view.toString());
+			}else {
+				System.out.println("Invalid contact number.");
+			}
+		}catch(NumberFormatException e) {
+			System.out.println("Please enter a valid number.");
+		}
+	}
 
 	/**
 	 * Handles the menu before the user is logged in
@@ -467,7 +512,7 @@ public class MyContactsApp {
 					yield true;
 				}
 				case "2" -> {
-					System.out.println("To be implemented...");
+					viewSpecificContactFlow(activeUser);
 					yield true;
 				}
 				case "0" -> {
@@ -520,6 +565,23 @@ public class MyContactsApp {
 		}
 		};
 
+	}
+	
+	/**
+	 * Safely retrieve contacts wrapped in the optionals
+	 * @param user	The user for whom the contact must be retirved
+	 * @param index	The index of the contact required
+	 * 
+	 * @return An optional object containing a contact if it exists (Optional\<Contact\>)
+	 */
+	private static Optional<Contact> getContactByIndex(User user, int index){
+		List<Contact> contacts = user.getContacts();
+		
+		if(index >= 0 && index < contacts.size()) {
+			return Optional.of(contacts.get(index));
+		}
+		
+		return Optional.empty();
 	}
 
 	/**
