@@ -1,2 +1,2 @@
-PERSON|Deva|Colleague|home,+919449016169;work,+919886484269;|home,deva@gmail.com;work,deva@office.com;
-ORGANIZATION|7Eleven|https://7Eleven.com/|Retail|[helpdesk],+91775528889;|helpdesk,helpdesk@7Eleven.com;
+PERSON|devanand|boss|home,+919449016169;work,+919886484269;+918722388999,0;|home,deva@gmail.com;work,deva@office.com;
+ORGANIZATION|7Eleven|https://webite.7Eleven.com/|Restaurants|[helpdesk],+91775528889;|helpdesk,helpdesk@7Eleven.com;
