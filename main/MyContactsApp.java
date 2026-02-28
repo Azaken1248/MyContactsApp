@@ -13,16 +13,24 @@ import com.seveneleven.mycontactapp.auth.providers.AuthProvider;
 import com.seveneleven.mycontactapp.auth.session.SessionManager;
 import com.seveneleven.mycontactapp.auth.strategy.BasicAuthStrategy;
 import com.seveneleven.mycontactapp.auth.strategy.OAuthStrategy;
+
+import com.seveneleven.mycontactapp.contact.command.ContactCommandController;
+import com.seveneleven.mycontactapp.contact.command.EditContactCommand;
+import com.seveneleven.mycontactapp.contact.command.ContactCommand;
+
 import com.seveneleven.mycontactapp.contact.model.Contact;
 import com.seveneleven.mycontactapp.contact.model.EmailAddress;
 import com.seveneleven.mycontactapp.contact.model.Organization;
 import com.seveneleven.mycontactapp.contact.model.Person;
 import com.seveneleven.mycontactapp.contact.model.PhoneNumber;
+
 import com.seveneleven.mycontactapp.contact.storage.ContactFileManager;
+
 import com.seveneleven.mycontactapp.contact.view.BasicContactView;
 import com.seveneleven.mycontactapp.contact.view.ContactView;
 import com.seveneleven.mycontactapp.contact.view.FullDetailsDecorator;
 import com.seveneleven.mycontactapp.contact.view.MetadataDecorator;
+
 import com.seveneleven.mycontactapp.user.command.ChangePasswordCommand;
 import com.seveneleven.mycontactapp.user.command.ProfileCommand;
 import com.seveneleven.mycontactapp.user.command.ProfileUpdateController;
@@ -56,6 +64,7 @@ public class MyContactsApp {
 	private static final Scanner scanner = new Scanner(System.in);
 	private static final PasswordHasher hasher = new PasswordHasher();
 	private static final Map<String, User> userDatabase = UserFileManager.loadData();
+
 
 	/**
 	 * Register the user to the application
@@ -176,6 +185,8 @@ public class MyContactsApp {
 		if(loginResult.isPresent()) {
 			SessionManager.getInstance().loginUser(loginResult.get());
 			System.out.println("Login Successful");
+			
+			ContactFileManager.loadContacts(SessionManager.getInstance().getCurrentUser().get());
 		}else {
 			System.out.println("Login Failed: Please enter valid credentials");
 		}
@@ -306,6 +317,212 @@ public class MyContactsApp {
 	}
 	
 	/**
+	 * Edit the existing contacts
+	 * 
+	 * @param contact	The contact to be edited
+	 */
+	private static void editPhonesFlow(Contact contact) {
+        boolean editingPhones = true;
+        while (editingPhones) {
+            System.out.println("\n--- Edit Phone Numbers ---");
+            List<PhoneNumber> phones = contact.getPhoneNumbers();
+            
+            if (phones.isEmpty()) {
+                System.out.println("No phone numbers saved.");
+            } else {
+                for (int i = 0; i < phones.size(); i++) {
+                    System.out.println("[" + (i + 1) + "] " + phones.get(i).toString());
+                }
+            }
+            
+            System.out.println("--------------------------");
+            System.out.println("1. Add new Phone Number");
+            System.out.println("2. Remove a Phone Number");
+            System.out.println("0. Done Editing Phones");
+            System.out.print("Select action: ");
+            
+            String choice = scanner.nextLine();
+            
+            editingPhones = switch (choice) {
+                case "1" -> {
+                    System.out.print("Label (e.g., Mobile): ");
+                    String label = scanner.nextLine();
+                    System.out.print("Number: ");
+                    String number = scanner.nextLine();
+                    contact.addPhoneNumber(new PhoneNumber(label, number));
+                    System.out.println(" Phone added.");
+                    yield true;
+                }
+                case "2" -> {
+                    if (phones.isEmpty()) {
+                        System.out.println(" No phones to remove.");
+                        yield true;
+                    }
+                    System.out.print("Enter number to remove: ");
+                    try {
+                        int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
+                        contact.removePhoneNumber(removeIdx);
+                        System.out.println(" Phone removed.");
+                    } catch (Exception e) {
+                        System.out.println(" Invalid input.");
+                    }
+                    yield true;
+                }
+                case "0" -> false;
+                default -> {
+                    System.out.println(" Invalid choice.");
+                    yield true;
+                }
+            };
+        }
+    }
+	
+	/**
+	 * Edit existing email addresses
+	 * 
+	 * @param contact	The contact to be edited
+	 */
+    private static void editEmailsFlow(Contact contact) {
+        boolean editingEmails = true;
+        while (editingEmails) {
+            System.out.println("\n--- Edit Email Addresses ---");
+            List<EmailAddress> emails = contact.getEmailAddresses();
+            
+            if (emails.isEmpty()) {
+                System.out.println("No emails saved.");
+            } else {
+                for (int i = 0; i < emails.size(); i++) {
+                    System.out.println("[" + (i + 1) + "] " + emails.get(i).toString());
+                }
+            }
+            
+            System.out.println("--------------------------");
+            System.out.println("1. Add new Email Address");
+            System.out.println("2. Remove an Email Address");
+            System.out.println("0. Done Editing Emails");
+            System.out.print("Select action: ");
+            
+            String choice = scanner.nextLine();
+            
+            editingEmails = switch (choice) {
+                case "1" -> {
+                    System.out.print("Label (e.g., Work): ");
+                    String label = scanner.nextLine();
+                    System.out.print("Email: ");
+                    String address = scanner.nextLine();
+                    contact.addEmailAddress(new EmailAddress(label, address));
+                    System.out.println(" Email added.");
+                    yield true;
+                }
+                case "2" -> {
+                    if (emails.isEmpty()) {
+                        System.out.println(" No emails to remove.");
+                        yield true;
+                    }
+                    System.out.print("Enter number to remove: ");
+                    try {
+                        int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
+                        contact.removeEmailAddress(removeIdx);
+                        System.out.println(" Email removed.");
+                    } catch (Exception e) {
+                        System.out.println(" Invalid input.");
+                    }
+                    yield true;
+                }
+                case "0" -> false;
+                default -> {
+                    System.out.println(" Invalid choice.");
+                    yield true;
+                }
+            };
+        }
+    }
+	
+	public static void editContactFlow(User activeUser) {
+		List<Contact> contacts = activeUser.getContacts();
+		if(contacts.isEmpty()) {
+			System.out.println("Your address book is empty");
+			return;
+		}
+		
+		for(int i = 0; i < contacts.size(); i++) {
+			System.out.println("[" + (i + 1) +"]" + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() + ")");
+		}
+		
+		System.out.print("\nEnter number of the contact to edit: ");
+		try {
+			int choice = Integer.parseInt(scanner.nextLine());
+			int index = choice - 1;
+			
+			if(index < 0 || index >= contacts.size()) {
+				System.out.println("Invalid contact number.");
+			}
+			
+			Contact originalContact = contacts.get(index);
+			Contact copiedContact = originalContact.copy();
+			
+			
+			System.out.println("\n---Editing " + copiedContact.getName() + "---");
+			
+			System.out.print("Enter new name (or press enter to skip editing this field): ");
+			String newName = scanner.nextLine();
+			
+			if(copiedContact instanceof Person) {
+				Person p = (Person) copiedContact;
+	
+				if(!newName.isEmpty()) p.setName(newName);
+				
+				System.out.print("Enter new relationship (or press enter to skip editing this field): ");
+				String newRelationship = scanner.nextLine();
+				if(!newRelationship.isEmpty()) p.setRelationship(newRelationship);
+				
+			}else if(copiedContact instanceof Organization) {
+				Organization o = (Organization) copiedContact;
+				
+				if(!newName.isEmpty()) o.setName(newName);
+				
+				System.out.print("Enter new webiste (or press enter to skip editing this field): ");
+				String newWebsite = scanner.nextLine();
+				if(!newWebsite.isEmpty()) o.setWebsite(newWebsite);
+				
+				System.out.print("Enter new industry (or press enter to skip editing this field): ");
+				String newIndustry = scanner.nextLine();
+				if(!newIndustry.isEmpty()) o.setIndustry(newIndustry);
+			}
+			
+			System.out.print("\nDo you want to edit Phone Numbers? (y/n): ");
+            if (scanner.nextLine().equalsIgnoreCase("y")) {
+                editPhonesFlow(copiedContact);
+            }
+
+            System.out.print("\nDo you want to edit Email Addresses? (y/n): ");
+            if (scanner.nextLine().equalsIgnoreCase("y")) {
+                editEmailsFlow(copiedContact);
+            }
+            
+			ContactCommand cmd = new EditContactCommand(contacts, index, copiedContact);
+			ContactCommandController.executeCommand(cmd);
+			
+			ContactFileManager.saveContacts(activeUser);
+			
+//			System.out.print("Are you sure you want to save this edit(y/n): ");
+//			if(!scanner.nextLine().equals("y")) {
+//				ContactCommandController.undoCommand();
+//				System.out.println("Exiting Edit...");
+//				ContactFileManager.saveContacts(activeUser);
+//				return;
+//			}
+			
+			
+			
+		}catch (NumberFormatException e) {
+			System.out.println("Please enter a valid number!!");
+		}catch (IllegalArgumentException e) {
+			System.out.println("Validation error: " + e.getMessage());
+		}
+	}
+	
+	/**
 	 * Format contact data into views
 	 * 
 	 * @param activeUser	The user whose list is being viewed
@@ -323,7 +540,7 @@ public class MyContactsApp {
 			System.out.println("[" + (i + 1) +"]" + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() + ")");
 		}
 		
-		System.out.print("\nEneter contact number to view detials (0 to cancel): ");
+		System.out.print("\nEnter contact number to view detials (0 to cancel): ");
 		try {
 			int choice = Integer.parseInt(scanner.nextLine());
 			if(choice == 0) return;
@@ -494,13 +711,12 @@ public class MyContactsApp {
 		while(inContactMenu) {
 			User activeUser = SessionManager.getInstance().getCurrentUser().get();
 			
-			scanner.nextLine();
-			
 			System.out.println("\n---Contact Menu---");
 			System.out.println("You have " + activeUser.getContacts().size() + " contacts saved.");
 			System.out.println("------------------");
 			System.out.println("1. Create a contact");
 			System.out.println("2. View a contact");
+			System.out.println("3. Edit a contact");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 			
@@ -513,6 +729,10 @@ public class MyContactsApp {
 				}
 				case "2" -> {
 					viewSpecificContactFlow(activeUser);
+					yield true;
+				}
+				case "3" -> {
+					editContactFlow(activeUser);
 					yield true;
 				}
 				case "0" -> {
@@ -535,8 +755,6 @@ public class MyContactsApp {
 	public static boolean handleUserMenu() {
 		User activeUser = SessionManager.getInstance().getCurrentUser().get();
 		
-		ContactFileManager.loadContacts(activeUser);
-		
 		System.out.println("\n---Main Menu (Logged in as " + activeUser.getEmail() +")---");
 		System.out.println("1. Profile Management");
 		System.out.println("2. Contact Management");
@@ -544,6 +762,8 @@ public class MyContactsApp {
 
 		System.out.print("Enter Choice: ");
 		int input = scanner.nextInt();
+		
+		scanner.nextLine();
 
 		return switch(input) {
 		case 1 -> {
