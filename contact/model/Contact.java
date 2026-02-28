@@ -32,6 +32,21 @@ public abstract class Contact {
 	}
 	
 	/**
+	 * Copy Constructor for deep copying.
+	 * 
+	 * @param source	The source contact
+	 */
+	protected Contact(Contact source) {
+		this.id = source.getId();
+		this.createdAt = source.getTimeStamp();
+		this.name = source.getName();
+		
+		// Defensive copy the lists
+		this.phoneNumbers = new ArrayList<>(source.getPhoneNumbers());
+		this.emailAddresses = new ArrayList<>(source.getEmailAddresses());
+	}
+	
+	/**
 	 * Method to get the contact id
 	 * 
 	 * @return	The UUID of the contact (UUID)
@@ -51,6 +66,14 @@ public abstract class Contact {
 	 * @return	The name of the contact (String)
 	 */
 	public String getName() { return name; }
+	
+	/**
+	 * Method to set the name
+	 * @param name	The name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 	
 	/**
 	 * Method to get the list of the phone numbers
@@ -86,6 +109,31 @@ public abstract class Contact {
 	}
 	
 	/**
+	 * Method to remove a phone number
+	 * 
+	 * @param index	The index of the phone number to remove
+	 */
+    public void removePhoneNumber(int index) {
+        if (index >= 0 && index < phoneNumbers.size()) {
+            this.phoneNumbers.remove(index);
+        } else {
+            throw new IllegalArgumentException("Invalid phone number index.");
+        }
+    }
+    
+    /**
+     * Mthod to remove email addresses
+     * 
+     * @param index	The index of the email addresses to remove
+     */
+    public void removeEmailAddress(int index) {
+        if (index >= 0 && index < emailAddresses.size()) {
+            this.emailAddresses.remove(index);
+        } else {
+            throw new IllegalArgumentException("Invalid email index.");
+        }
+    }
+	/**
 	 * Abstract method to display a summary of all contact details
 	 * 
 	 * @return	The Summary of the contact (String)
@@ -98,4 +146,11 @@ public abstract class Contact {
 	 * @return	The Summary of the contact (String)
 	 */
 	public abstract String getContactType();
+	
+	/**
+	 * Method for deep copy implementation
+	 * 
+	 * @return	The copy of the contact
+	 */
+	public abstract Contact copy();
 }
