@@ -39,6 +39,8 @@ import com.seveneleven.mycontactapp.user.command.UpdatePhoneNumberCommand;
 import com.seveneleven.mycontactapp.user.command.UpdateTierCommand;
 import com.seveneleven.mycontactapp.user.command.UpdateUserNameCommand;
 
+import com.seveneleven.mycontactapp.contact.observer.ContactObserver;
+import com.seveneleven.mycontactapp.contact.observer.DeletionLogger;
 import com.seveneleven.mycontactapp.user.model.User;
 import com.seveneleven.mycontactapp.user.model.UserBuilder;
 import com.seveneleven.mycontactapp.user.model.UserProfile;
@@ -64,7 +66,19 @@ public class MyContactsApp {
 	private static final Scanner scanner = new Scanner(System.in);
 	private static final PasswordHasher hasher = new PasswordHasher();
 	private static final Map<String, User> userDatabase = UserFileManager.loadData();
+	private static final List<ContactObserver> observers = new ArrayList<>(List.of(new DeletionLogger()));
 
+	/**
+	 * Method to manage observes
+	 * 
+	 * @param contact	The contact to delete
+	 * @param isHardDelete	The type of delete
+	 */
+	private static void notifyObservers(Contact contact, boolean isHardDelete) {
+		for(ContactObserver observers : observers) {
+			observers.onContactDeleted(contact, isHardDelete);
+		}
+	}
 
 	/**
 	 * Register the user to the application
@@ -185,7 +199,7 @@ public class MyContactsApp {
 		if(loginResult.isPresent()) {
 			SessionManager.getInstance().loginUser(loginResult.get());
 			System.out.println("Login Successful");
-			
+
 			ContactFileManager.loadContacts(SessionManager.getInstance().getCurrentUser().get());
 		}else {
 			System.out.println("Login Failed: Please enter valid credentials");
@@ -315,213 +329,218 @@ public class MyContactsApp {
 
 		}
 	}
-	
+
 	/**
 	 * Edit the existing contacts
 	 * 
 	 * @param contact	The contact to be edited
 	 */
 	private static void editPhonesFlow(Contact contact) {
-        boolean editingPhones = true;
-        while (editingPhones) {
-            System.out.println("\n--- Edit Phone Numbers ---");
-            List<PhoneNumber> phones = contact.getPhoneNumbers();
-            
-            if (phones.isEmpty()) {
-                System.out.println("No phone numbers saved.");
-            } else {
-                for (int i = 0; i < phones.size(); i++) {
-                    System.out.println("[" + (i + 1) + "] " + phones.get(i).toString());
-                }
-            }
-            
-            System.out.println("--------------------------");
-            System.out.println("1. Add new Phone Number");
-            System.out.println("2. Remove a Phone Number");
-            System.out.println("0. Done Editing Phones");
-            System.out.print("Select action: ");
-            
-            String choice = scanner.nextLine();
-            
-            editingPhones = switch (choice) {
-                case "1" -> {
-                    System.out.print("Label (e.g., Mobile): ");
-                    String label = scanner.nextLine();
-                    System.out.print("Number: ");
-                    String number = scanner.nextLine();
-                    contact.addPhoneNumber(new PhoneNumber(label, number));
-                    System.out.println(" Phone added.");
-                    yield true;
-                }
-                case "2" -> {
-                    if (phones.isEmpty()) {
-                        System.out.println(" No phones to remove.");
-                        yield true;
-                    }
-                    System.out.print("Enter number to remove: ");
-                    try {
-                        int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
-                        contact.removePhoneNumber(removeIdx);
-                        System.out.println(" Phone removed.");
-                    } catch (Exception e) {
-                        System.out.println(" Invalid input.");
-                    }
-                    yield true;
-                }
-                case "0" -> false;
-                default -> {
-                    System.out.println(" Invalid choice.");
-                    yield true;
-                }
-            };
-        }
-    }
-	
+		boolean editingPhones = true;
+		while (editingPhones) {
+			System.out.println("\n--- Edit Phone Numbers ---");
+			List<PhoneNumber> phones = contact.getPhoneNumbers();
+
+			if (phones.isEmpty()) {
+				System.out.println("No phone numbers saved.");
+			} else {
+				for (int i = 0; i < phones.size(); i++) {
+					System.out.println("[" + (i + 1) + "] " + phones.get(i).toString());
+				}
+			}
+
+			System.out.println("--------------------------");
+			System.out.println("1. Add new Phone Number");
+			System.out.println("2. Remove a Phone Number");
+			System.out.println("0. Done Editing Phones");
+			System.out.print("Select action: ");
+
+			String choice = scanner.nextLine();
+
+			editingPhones = switch (choice) {
+			case "1" -> {
+				System.out.print("Label (e.g., Mobile): ");
+				String label = scanner.nextLine();
+				System.out.print("Number: ");
+				String number = scanner.nextLine();
+				contact.addPhoneNumber(new PhoneNumber(label, number));
+				System.out.println(" Phone added.");
+				yield true;
+			}
+			case "2" -> {
+				if (phones.isEmpty()) {
+					System.out.println(" No phones to remove.");
+					yield true;
+				}
+				System.out.print("Enter number to remove: ");
+				try {
+					int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
+					contact.removePhoneNumber(removeIdx);
+					System.out.println(" Phone removed.");
+				} catch (Exception e) {
+					System.out.println(" Invalid input.");
+				}
+				yield true;
+			}
+			case "0" -> false;
+			default -> {
+				System.out.println(" Invalid choice.");
+				yield true;
+			}
+			};
+		}
+	}
+
 	/**
 	 * Edit existing email addresses
 	 * 
 	 * @param contact	The contact to be edited
 	 */
-    private static void editEmailsFlow(Contact contact) {
-        boolean editingEmails = true;
-        while (editingEmails) {
-            System.out.println("\n--- Edit Email Addresses ---");
-            List<EmailAddress> emails = contact.getEmailAddresses();
-            
-            if (emails.isEmpty()) {
-                System.out.println("No emails saved.");
-            } else {
-                for (int i = 0; i < emails.size(); i++) {
-                    System.out.println("[" + (i + 1) + "] " + emails.get(i).toString());
-                }
-            }
-            
-            System.out.println("--------------------------");
-            System.out.println("1. Add new Email Address");
-            System.out.println("2. Remove an Email Address");
-            System.out.println("0. Done Editing Emails");
-            System.out.print("Select action: ");
-            
-            String choice = scanner.nextLine();
-            
-            editingEmails = switch (choice) {
-                case "1" -> {
-                    System.out.print("Label (e.g., Work): ");
-                    String label = scanner.nextLine();
-                    System.out.print("Email: ");
-                    String address = scanner.nextLine();
-                    contact.addEmailAddress(new EmailAddress(label, address));
-                    System.out.println(" Email added.");
-                    yield true;
-                }
-                case "2" -> {
-                    if (emails.isEmpty()) {
-                        System.out.println(" No emails to remove.");
-                        yield true;
-                    }
-                    System.out.print("Enter number to remove: ");
-                    try {
-                        int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
-                        contact.removeEmailAddress(removeIdx);
-                        System.out.println(" Email removed.");
-                    } catch (Exception e) {
-                        System.out.println(" Invalid input.");
-                    }
-                    yield true;
-                }
-                case "0" -> false;
-                default -> {
-                    System.out.println(" Invalid choice.");
-                    yield true;
-                }
-            };
-        }
-    }
+	private static void editEmailsFlow(Contact contact) {
+		boolean editingEmails = true;
+		while (editingEmails) {
+			System.out.println("\n--- Edit Email Addresses ---");
+			List<EmailAddress> emails = contact.getEmailAddresses();
+
+			if (emails.isEmpty()) {
+				System.out.println("No emails saved.");
+			} else {
+				for (int i = 0; i < emails.size(); i++) {
+					System.out.println("[" + (i + 1) + "] " + emails.get(i).toString());
+				}
+			}
+
+			System.out.println("--------------------------");
+			System.out.println("1. Add new Email Address");
+			System.out.println("2. Remove an Email Address");
+			System.out.println("0. Done Editing Emails");
+			System.out.print("Select action: ");
+
+			String choice = scanner.nextLine();
+
+			editingEmails = switch (choice) {
+			case "1" -> {
+				System.out.print("Label (e.g., Work): ");
+				String label = scanner.nextLine();
+				System.out.print("Email: ");
+				String address = scanner.nextLine();
+				contact.addEmailAddress(new EmailAddress(label, address));
+				System.out.println(" Email added.");
+				yield true;
+			}
+			case "2" -> {
+				if (emails.isEmpty()) {
+					System.out.println(" No emails to remove.");
+					yield true;
+				}
+				System.out.print("Enter number to remove: ");
+				try {
+					int removeIdx = Integer.parseInt(scanner.nextLine()) - 1;
+					contact.removeEmailAddress(removeIdx);
+					System.out.println(" Email removed.");
+				} catch (Exception e) {
+					System.out.println(" Invalid input.");
+				}
+				yield true;
+			}
+			case "0" -> false;
+			default -> {
+				System.out.println(" Invalid choice.");
+				yield true;
+			}
+			};
+		}
+	}
 	
+	/**
+	 * Handles contact edit flow
+	 * 
+	 * @param activeUser	The current logged in user
+	 */
 	public static void editContactFlow(User activeUser) {
 		List<Contact> contacts = activeUser.getContacts();
 		if(contacts.isEmpty()) {
 			System.out.println("Your address book is empty");
 			return;
 		}
-		
+
 		for(int i = 0; i < contacts.size(); i++) {
 			System.out.println("[" + (i + 1) +"]" + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() + ")");
 		}
-		
+
 		System.out.print("\nEnter number of the contact to edit: ");
 		try {
 			int choice = Integer.parseInt(scanner.nextLine());
 			int index = choice - 1;
-			
+
 			if(index < 0 || index >= contacts.size()) {
 				System.out.println("Invalid contact number.");
 			}
-			
+
 			Contact originalContact = contacts.get(index);
 			Contact copiedContact = originalContact.copy();
-			
-			
+
+
 			System.out.println("\n---Editing " + copiedContact.getName() + "---");
-			
+
 			System.out.print("Enter new name (or press enter to skip editing this field): ");
 			String newName = scanner.nextLine();
-			
+
 			if(copiedContact instanceof Person) {
 				Person p = (Person) copiedContact;
-	
+
 				if(!newName.isEmpty()) p.setName(newName);
-				
+
 				System.out.print("Enter new relationship (or press enter to skip editing this field): ");
 				String newRelationship = scanner.nextLine();
 				if(!newRelationship.isEmpty()) p.setRelationship(newRelationship);
-				
+
 			}else if(copiedContact instanceof Organization) {
 				Organization o = (Organization) copiedContact;
-				
+
 				if(!newName.isEmpty()) o.setName(newName);
-				
+
 				System.out.print("Enter new webiste (or press enter to skip editing this field): ");
 				String newWebsite = scanner.nextLine();
 				if(!newWebsite.isEmpty()) o.setWebsite(newWebsite);
-				
+
 				System.out.print("Enter new industry (or press enter to skip editing this field): ");
 				String newIndustry = scanner.nextLine();
 				if(!newIndustry.isEmpty()) o.setIndustry(newIndustry);
 			}
-			
-			System.out.print("\nDo you want to edit Phone Numbers? (y/n): ");
-            if (scanner.nextLine().equalsIgnoreCase("y")) {
-                editPhonesFlow(copiedContact);
-            }
 
-            System.out.print("\nDo you want to edit Email Addresses? (y/n): ");
-            if (scanner.nextLine().equalsIgnoreCase("y")) {
-                editEmailsFlow(copiedContact);
-            }
-            
+			System.out.print("\nDo you want to edit Phone Numbers? (y/n): ");
+			if (scanner.nextLine().equalsIgnoreCase("y")) {
+				editPhonesFlow(copiedContact);
+			}
+
+			System.out.print("\nDo you want to edit Email Addresses? (y/n): ");
+			if (scanner.nextLine().equalsIgnoreCase("y")) {
+				editEmailsFlow(copiedContact);
+			}
+
 			ContactCommand cmd = new EditContactCommand(contacts, index, copiedContact);
 			ContactCommandController.executeCommand(cmd);
-			
+
 			ContactFileManager.saveContacts(activeUser);
-			
-//			System.out.print("Are you sure you want to save this edit(y/n): ");
-//			if(!scanner.nextLine().equals("y")) {
-//				ContactCommandController.undoCommand();
-//				System.out.println("Exiting Edit...");
-//				ContactFileManager.saveContacts(activeUser);
-//				return;
-//			}
-			
-			
-			
+
+			System.out.print("Are you sure you want to save this edit(y/n): ");
+			if(!scanner.nextLine().equals("y")) {
+				ContactCommandController.undoCommand();
+				System.out.println("Exiting Edit...");
+				ContactFileManager.saveContacts(activeUser);
+				return;
+			}
+
+
+
 		}catch (NumberFormatException e) {
 			System.out.println("Please enter a valid number!!");
 		}catch (IllegalArgumentException e) {
 			System.out.println("Validation error: " + e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Format contact data into views
 	 * 
@@ -529,37 +548,160 @@ public class MyContactsApp {
 	 */
 	public static void viewSpecificContactFlow(User activeUser) {
 		List<Contact> contacts = activeUser.getContacts();
-		
+
 		if(contacts.isEmpty()) {
 			System.out.println("Your address book is empty.");
 			return;
 		}
-		
+
 		System.out.println("\n---Your Address Book---");
 		for(int i = 0; i < contacts.size(); i++) {
 			System.out.println("[" + (i + 1) +"]" + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() + ")");
 		}
-		
+
 		System.out.print("\nEnter contact number to view detials (0 to cancel): ");
 		try {
 			int choice = Integer.parseInt(scanner.nextLine());
 			if(choice == 0) return;
-			
+
 			Optional<Contact> selectedContactOption = getContactByIndex(activeUser, choice - 1);
-			
+
 			if(selectedContactOption.isPresent()) {
 				Contact selectedContact = selectedContactOption.get();
-				
+
 				ContactView view = new BasicContactView(selectedContact);
 				view = new FullDetailsDecorator(view, selectedContact);
 				view = new MetadataDecorator(view, selectedContact);
-				
+
 				System.out.println("\n" + view.toString());
 			}else {
 				System.out.println("Invalid contact number.");
 			}
 		}catch(NumberFormatException e) {
 			System.out.println("Please enter a valid number.");
+		}
+	}
+	
+	/**
+	 * Method to handle contact recylces
+	 * 
+	 * @param activeUser	The current user logged in.
+	 */
+	public static void handleRecycleBinFlow(User activeUser) {
+        List<Contact> bin = activeUser.getRecycleBin();
+        List<Contact> activeContacts = activeUser.getContacts();
+
+        if (bin.isEmpty()) {
+            System.out.println("\nYour Recycle Bin is currently empty.");
+            return;
+        }
+
+        System.out.println("\n--- Recycle Bin ---");
+        System.out.println("Note: Contacts here will be permanently lost when you log out or close the app.");
+        System.out.println("----------------------");
+        
+        for (int i = 0; i < bin.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + bin.get(i).getName() + " (" + bin.get(i).getContactType() + ")");
+        }
+
+        System.out.print("\nEnter number to restore (0 to cancel, 'clear' to empty bin): ");
+        String input = scanner.nextLine();
+
+        if (input.equals("0")) return;
+        
+        if (input.equalsIgnoreCase("clear")) {
+            for (Contact c : bin) {
+                c.cascadeDelete(); 
+            }
+            bin.clear();
+            System.out.println("Recycle Bin emptied. All contacts permanently destroyed.");
+            return;
+        }
+
+        try {
+            int choice = Integer.parseInt(input);
+            int index = choice - 1;
+
+            if (index < 0 || index >= bin.size()) {
+                System.out.println("Invalid contact number.");
+                return;
+            }
+
+            Contact contactToRestore = bin.remove(index);
+            activeContacts.add(contactToRestore);
+            ContactFileManager.saveContacts(activeUser);
+            
+            System.out.println("Contact '" + contactToRestore.getName() + "' successfully restored to your active list!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number or 'clear'.");
+        }
+    }
+	
+	/**
+	 * Handles the contact deletion flow
+	 * 
+	 * @param activeUser The current user
+	 */
+	public static void deleteContactFlow(User activeUser) {
+		List<Contact> contacts = activeUser.getContacts();
+
+		if(contacts.isEmpty()) {
+			System.out.println("\nYour address book is empty.");
+		}
+
+		System.out.println("\n---Delete a Contact---");
+		for(int i = 0; i < contacts.size(); i++) {
+			System.out.println("[" + (i + 1) + "] " + contacts.get(i).getName() + " (" + contacts.get(i).getContactType() +")");
+		}
+
+		System.out.print("\nEnter number of delete (0 to cancel): ");
+		try {
+			int choice = Integer.parseInt(scanner.nextLine());
+
+			if(choice == 0) return;
+
+			int index = choice - 1;
+			if(index < 0 || index >= contacts.size()) {
+				System.out.println("Invalid contact number");
+			}
+
+			Contact contact = contacts.get(index);
+
+			System.out.print("Are you sure you want to delete " + contact.getName() + "?(y/n): ");
+			if(!scanner.nextLine().equalsIgnoreCase("y")) {
+				System.out.println("Deletion cancelled");
+				return;
+			}
+
+			System.out.println("\n---Select Deletion Type---");
+			System.out.println("1. Soft Delete (Moves to Recycle Bin)");
+			System.out.println("2. Hard Delete (Permanent Delete)");
+			System.out.print("Choice: ");
+			String delType = scanner.nextLine();
+
+			if("1".equals(delType)) {
+				activeUser.getRecycleBin().add(contact);
+				contacts.remove(index);
+				
+				notifyObservers(contact, false);
+				System.out.println("Contact moved to recylce bin");
+				
+			}else if("2".equals(delType)) {
+				contacts.remove(index);
+				contact.cascadeDelete();
+				
+				notifyObservers(contact, true);
+				System.out.println("Contact permanently destroyed");
+			} else {
+				System.out.println("Please Enter a valid number: Deletion cancelled");
+				return;
+			}
+			
+			ContactFileManager.saveContacts(activeUser);
+
+		}catch(NumberFormatException e) {
+			System.out.println("Exeption: please enter numbers only!!");
 		}
 	}
 
@@ -707,42 +849,52 @@ public class MyContactsApp {
 
 	public static void handleContactMenu() {
 		boolean inContactMenu = true;
-		
+
 		while(inContactMenu) {
 			User activeUser = SessionManager.getInstance().getCurrentUser().get();
-			
+
 			System.out.println("\n---Contact Menu---");
 			System.out.println("You have " + activeUser.getContacts().size() + " contacts saved.");
 			System.out.println("------------------");
 			System.out.println("1. Create a contact");
 			System.out.println("2. View a contact");
 			System.out.println("3. Edit a contact");
+			System.out.println("4. Delete a contact");
+			System.out.println("5. Recycle Bin (Restore Contacts)");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
-			
+
 			String input = scanner.nextLine();
-			
+
 			inContactMenu = switch(input) {
-				case "1" -> {
-					createNewContactFlow(activeUser);
-					yield true;
-				}
-				case "2" -> {
-					viewSpecificContactFlow(activeUser);
-					yield true;
-				}
-				case "3" -> {
-					editContactFlow(activeUser);
-					yield true;
-				}
-				case "0" -> {
-					System.out.println("Returning to dashboard...");
-					yield false;
-				}
-				default -> {
-					System.out.println("Invalid Choice!!");
-					yield true;
-				}
+			case "1" -> {
+				createNewContactFlow(activeUser);
+				yield true;
+			}
+			case "2" -> {
+				viewSpecificContactFlow(activeUser);
+				yield true;
+			}
+			case "3" -> {
+				editContactFlow(activeUser);
+				yield true;
+			}
+			case "4" -> {
+				deleteContactFlow(activeUser);
+				yield true;
+			}
+			case "5" ->{
+				handleRecycleBinFlow(activeUser);
+				yield true;
+			}
+			case "0" -> {
+				System.out.println("Returning to dashboard...");
+				yield false;
+			}
+			default -> {
+				System.out.println("Invalid Choice!!");
+				yield true;
+			}
 			};
 		}
 	}
@@ -754,7 +906,7 @@ public class MyContactsApp {
 	 */
 	public static boolean handleUserMenu() {
 		User activeUser = SessionManager.getInstance().getCurrentUser().get();
-		
+
 		System.out.println("\n---Main Menu (Logged in as " + activeUser.getEmail() +")---");
 		System.out.println("1. Profile Management");
 		System.out.println("2. Contact Management");
@@ -762,7 +914,7 @@ public class MyContactsApp {
 
 		System.out.print("Enter Choice: ");
 		int input = scanner.nextInt();
-		
+
 		scanner.nextLine();
 
 		return switch(input) {
@@ -786,7 +938,7 @@ public class MyContactsApp {
 		};
 
 	}
-	
+
 	/**
 	 * Safely retrieve contacts wrapped in the optionals
 	 * @param user	The user for whom the contact must be retirved
@@ -796,11 +948,11 @@ public class MyContactsApp {
 	 */
 	private static Optional<Contact> getContactByIndex(User user, int index){
 		List<Contact> contacts = user.getContacts();
-		
+
 		if(index >= 0 && index < contacts.size()) {
 			return Optional.of(contacts.get(index));
 		}
-		
+
 		return Optional.empty();
 	}
 
