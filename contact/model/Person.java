@@ -29,11 +29,29 @@ public class Person extends Contact {
 	}
 	
 	/**
+	 * Copy constructor
+	 * 
+	 * @param source	The source contact
+	 */
+	public Person(Person source) {
+		super(source);
+		this.relationship = source.relationship;
+	}
+	
+	/**
 	 * Method to get the relationship of the contact
 	 * 
 	 * @return	The relationship of the contact (String)
 	 */
 	public String getRelationship() { return relationship; }
+	
+	/**
+	 * Method to set the relationship
+	 * @param relationship	The relationship to set
+	 */
+	public void setRelationship(String relationship) {
+		this.relationship = relationship;
+	}
 	
 	/**
 	 * Method to display a summary of all contact details
@@ -46,10 +64,20 @@ public class Person extends Contact {
 	/**
 	 * Method to get the type of contact
 	 * 
-	 * @return	The Summary of the contact (String)
+	 * @return	The type of contact (String)
 	 */
 	@Override
 	public String getContactType() { return "PERSON"; }
+	
+	/**
+	 * method to copy the contact
+	 * 
+	 * @return Contact	the copied contact
+	 */
+	@Override
+	public Contact copy() {
+		return new Person(this);
+	}
 	
 	/**
 	 * Inner builder class to build a person object
