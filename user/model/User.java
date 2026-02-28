@@ -19,6 +19,7 @@ public abstract class User {
 	private String passwordHash;
 	private UserProfile profileInfo;
 	private List<Contact> contacts;
+	private final List<Contact> recycleBin = new ArrayList<>();
 	
 	/**
 	 * Protected constructor to enforce object creation only via the UserBuilder.
@@ -59,6 +60,13 @@ public abstract class User {
 	 * @return The contact about the user profile (List\<Contact\>)
 	 */
 	public List<Contact> getContacts() { return contacts; }
+	
+	/**
+	 * Method to get the recycle bin
+	 * 
+	 * @return	The recycle bin (List\<Contact\>)
+	 */
+	public List<Contact> getRecycleBin() { return recycleBin; }
 	
 	/**
 	 * Method to update/reset the password of the user
