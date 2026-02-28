@@ -133,6 +133,14 @@ public abstract class Contact {
             throw new IllegalArgumentException("Invalid email index.");
         }
     }
+    
+    /**
+     * Clear all nested components on nested del
+     */
+    public void cascadeDelete() {
+    	this.phoneNumbers.clear();
+    	this.emailAddresses.clear();
+    }
 	/**
 	 * Abstract method to display a summary of all contact details
 	 * 
