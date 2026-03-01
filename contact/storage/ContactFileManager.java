@@ -134,7 +134,7 @@ public class ContactFileManager {
 				user.getContacts().add(loadedContact);
 			}
 		}catch(IOException e) {
-			System.out.println("Error Loading Data: " + e.getMessage());
+			System.out.println("No saved data found!!");
 		}
 	}
 
