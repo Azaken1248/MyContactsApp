@@ -704,7 +704,88 @@ public class MyContactsApp {
 			System.out.println("Exeption: please enter numbers only!!");
 		}
 	}
+	
+	public static void handleBulkOperationsFlow(User activeUser) {
+        List<Contact> allContacts = activeUser.getContacts();
 
+        if (allContacts.isEmpty()) {
+            System.out.println("\nYour address book is currently empty.");
+            return;
+        }
+
+        System.out.println("\n--- Bulk Operations ---");
+        System.out.println("Step 1: Filter your contacts");
+        System.out.println("1. Select ALL Contacts");
+        System.out.println("2. Select ONLY Persons");
+        System.out.println("3. Select ONLY Organizations");
+        System.out.println("4. Select by Name starting with...");
+        System.out.print("Enter choice: ");
+        
+        String filterChoice = scanner.nextLine();
+        
+        java.util.function.Predicate<Contact> filterPredicate = null;
+
+        switch (filterChoice) {
+            case "1" -> filterPredicate = c -> true; 
+            case "2" -> filterPredicate = c -> c instanceof Person;
+            case "3" -> filterPredicate = c -> c instanceof Organization;
+            case "4" -> {
+                System.out.print("Enter starting letter(s): ");
+                String prefix = scanner.nextLine().toLowerCase();
+                filterPredicate = c -> c.getName().toLowerCase().startsWith(prefix);
+            }
+            default -> {
+                System.out.println("Invalid filter choice.");
+                return;
+            }
+        }
+
+        com.seveneleven.mycontactapp.contact.composite.ContactGroup bulkGroup = 
+                new com.seveneleven.mycontactapp.contact.composite.ContactGroup();
+
+        allContacts.stream()
+                   .filter(filterPredicate)
+                   .forEach(bulkGroup::addComponent); 
+
+        if (bulkGroup.getSize() == 0) {
+            System.out.println("No contacts matched your filter.");
+            return;
+        }
+
+        System.out.println("\nFound " + bulkGroup.getSize() + " matching contacts.");
+        System.out.println("Step 2: Select Action");
+        System.out.println("1. Export to CSV");
+        System.out.println("2. Add a Tag");
+        System.out.println("3. Soft Delete");
+        System.out.println("0. Cancel");
+        System.out.print("Enter choice: ");
+        
+        String actionChoice = scanner.nextLine();
+        
+        switch (actionChoice) {
+            case "1" -> {
+                ContactFileManager.saveExportFile(activeUser, bulkGroup);
+            }
+            case "2" -> {
+                System.out.print("Enter tag to apply: ");
+                String tag = scanner.nextLine();
+                bulkGroup.addTag(tag);
+                ContactFileManager.saveContacts(activeUser);
+                System.out.println("Tag applied to " + bulkGroup.getSize() + " contacts.");
+            }
+            case "3" -> {
+                bulkGroup.performBulkSoftDelete(activeUser);
+                ContactFileManager.saveContacts(activeUser);
+                System.out.println(bulkGroup.getSize() + " contacts moved to Recycle Bin.");
+            }
+            case "0" -> {
+                System.out.println("Bulk operation cancelled.");
+            }
+            default -> {
+                System.out.println("Invalid action choice.");
+            }
+        }
+    }
 	/**
 	 * Handles the menu before the user is logged in
 	 * 
@@ -861,6 +942,7 @@ public class MyContactsApp {
 			System.out.println("3. Edit a contact");
 			System.out.println("4. Delete a contact");
 			System.out.println("5. Recycle Bin (Restore Contacts)");
+			System.out.println("6. Perform bulk operations");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 
@@ -885,6 +967,10 @@ public class MyContactsApp {
 			}
 			case "5" ->{
 				handleRecycleBinFlow(activeUser);
+				yield true;
+			}
+			case "6" ->{
+				handleBulkOperationsFlow(activeUser);
 				yield true;
 			}
 			case "0" -> {
