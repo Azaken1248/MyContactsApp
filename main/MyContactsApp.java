@@ -42,10 +42,16 @@ import com.seveneleven.mycontactapp.user.command.UpdateUserNameCommand;
 
 import com.seveneleven.mycontactapp.contact.observer.ContactObserver;
 import com.seveneleven.mycontactapp.contact.observer.DeletionLogger;
+import com.seveneleven.mycontactapp.contact.search.AndCriteria;
+import com.seveneleven.mycontactapp.contact.search.DateAddedCriteria;
 import com.seveneleven.mycontactapp.contact.search.EmailCriteria;
 import com.seveneleven.mycontactapp.contact.search.NameCriteria;
 import com.seveneleven.mycontactapp.contact.search.PhoneCriteria;
 import com.seveneleven.mycontactapp.contact.search.SearchCriteria;
+import com.seveneleven.mycontactapp.contact.search.TagCriteria;
+import com.seveneleven.mycontactapp.contact.sort.ContactSortStrategy;
+import com.seveneleven.mycontactapp.contact.sort.SortByDateStrategy;
+import com.seveneleven.mycontactapp.contact.sort.SortByNameStrategy;
 import com.seveneleven.mycontactapp.user.model.User;
 import com.seveneleven.mycontactapp.user.model.UserBuilder;
 import com.seveneleven.mycontactapp.user.model.UserProfile;
@@ -456,7 +462,7 @@ public class MyContactsApp {
 			};
 		}
 	}
-	
+
 	/**
 	 * Handles contact edit flow
 	 * 
@@ -586,63 +592,63 @@ public class MyContactsApp {
 			System.out.println("Please enter a valid number.");
 		}
 	}
-	
+
 	/**
 	 * Method to handle contact recylces
 	 * 
 	 * @param activeUser	The current user logged in.
 	 */
 	public static void handleRecycleBinFlow(User activeUser) {
-        List<Contact> bin = activeUser.getRecycleBin();
-        List<Contact> activeContacts = activeUser.getContacts();
+		List<Contact> bin = activeUser.getRecycleBin();
+		List<Contact> activeContacts = activeUser.getContacts();
 
-        if (bin.isEmpty()) {
-            System.out.println("\nYour Recycle Bin is currently empty.");
-            return;
-        }
+		if (bin.isEmpty()) {
+			System.out.println("\nYour Recycle Bin is currently empty.");
+			return;
+		}
 
-        System.out.println("\n--- Recycle Bin ---");
-        System.out.println("Note: Contacts here will be permanently lost when you log out or close the app.");
-        System.out.println("----------------------");
-        
-        for (int i = 0; i < bin.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + bin.get(i).getName() + " (" + bin.get(i).getContactType() + ")");
-        }
+		System.out.println("\n--- Recycle Bin ---");
+		System.out.println("Note: Contacts here will be permanently lost when you log out or close the app.");
+		System.out.println("----------------------");
 
-        System.out.print("\nEnter number to restore (0 to cancel, 'clear' to empty bin): ");
-        String input = scanner.nextLine();
+		for (int i = 0; i < bin.size(); i++) {
+			System.out.println("[" + (i + 1) + "] " + bin.get(i).getName() + " (" + bin.get(i).getContactType() + ")");
+		}
 
-        if (input.equals("0")) return;
-        
-        if (input.equalsIgnoreCase("clear")) {
-            for (Contact c : bin) {
-                c.cascadeDelete(); 
-            }
-            bin.clear();
-            System.out.println("Recycle Bin emptied. All contacts permanently destroyed.");
-            return;
-        }
+		System.out.print("\nEnter number to restore (0 to cancel, 'clear' to empty bin): ");
+		String input = scanner.nextLine();
 
-        try {
-            int choice = Integer.parseInt(input);
-            int index = choice - 1;
+		if (input.equals("0")) return;
 
-            if (index < 0 || index >= bin.size()) {
-                System.out.println("Invalid contact number.");
-                return;
-            }
+		if (input.equalsIgnoreCase("clear")) {
+			for (Contact c : bin) {
+				c.cascadeDelete(); 
+			}
+			bin.clear();
+			System.out.println("Recycle Bin emptied. All contacts permanently destroyed.");
+			return;
+		}
 
-            Contact contactToRestore = bin.remove(index);
-            activeContacts.add(contactToRestore);
-            ContactFileManager.saveContacts(activeUser);
-            
-            System.out.println("Contact '" + contactToRestore.getName() + "' successfully restored to your active list!");
+		try {
+			int choice = Integer.parseInt(input);
+			int index = choice - 1;
 
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number or 'clear'.");
-        }
-    }
-	
+			if (index < 0 || index >= bin.size()) {
+				System.out.println("Invalid contact number.");
+				return;
+			}
+
+			Contact contactToRestore = bin.remove(index);
+			activeContacts.add(contactToRestore);
+			ContactFileManager.saveContacts(activeUser);
+
+			System.out.println("Contact '" + contactToRestore.getName() + "' successfully restored to your active list!");
+
+		} catch (NumberFormatException e) {
+			System.out.println("Invalid input. Please enter a number or 'clear'.");
+		}
+	}
+
 	/**
 	 * Handles the contact deletion flow
 	 * 
@@ -688,156 +694,246 @@ public class MyContactsApp {
 			if("1".equals(delType)) {
 				activeUser.getRecycleBin().add(contact);
 				contacts.remove(index);
-				
+
 				notifyObservers(contact, false);
 				System.out.println("Contact moved to recylce bin");
-				
+
 			}else if("2".equals(delType)) {
 				contacts.remove(index);
 				contact.cascadeDelete();
-				
+
 				notifyObservers(contact, true);
 				System.out.println("Contact permanently destroyed");
 			} else {
 				System.out.println("Please Enter a valid number: Deletion cancelled");
 				return;
 			}
-			
+
 			ContactFileManager.saveContacts(activeUser);
 
 		}catch(NumberFormatException e) {
 			System.out.println("Exeption: please enter numbers only!!");
 		}
 	}
-	
+
 	public static void handleBulkOperationsFlow(User activeUser) {
-        List<Contact> allContacts = activeUser.getContacts();
+		List<Contact> allContacts = activeUser.getContacts();
 
-        if (allContacts.isEmpty()) {
-            System.out.println("\nYour address book is currently empty.");
-            return;
-        }
+		if (allContacts.isEmpty()) {
+			System.out.println("\nYour address book is currently empty.");
+			return;
+		}
 
-        System.out.println("\n--- Bulk Operations ---");
-        System.out.println("Step 1: Filter your contacts");
-        System.out.println("1. Select ALL Contacts");
-        System.out.println("2. Select ONLY Persons");
-        System.out.println("3. Select ONLY Organizations");
-        System.out.println("4. Select by Name starting with...");
-        System.out.print("Enter choice: ");
-        
-        String filterChoice = scanner.nextLine();
-        
-        java.util.function.Predicate<Contact> filterPredicate = null;
+		System.out.println("\n--- Bulk Operations ---");
+		System.out.println("Step 1: Filter your contacts");
+		System.out.println("1. Select ALL Contacts");
+		System.out.println("2. Select ONLY Persons");
+		System.out.println("3. Select ONLY Organizations");
+		System.out.println("4. Select by Name starting with...");
+		System.out.println("0. Exit");
+		System.out.print("Enter choice: ");
 
-        switch (filterChoice) {
-            case "1" -> filterPredicate = c -> true; 
-            case "2" -> filterPredicate = c -> c instanceof Person;
-            case "3" -> filterPredicate = c -> c instanceof Organization;
-            case "4" -> {
-                System.out.print("Enter starting letter(s): ");
-                String prefix = scanner.nextLine().toLowerCase();
-                filterPredicate = c -> c.getName().toLowerCase().startsWith(prefix);
-            }
-            default -> {
-                System.out.println("Invalid filter choice.");
-                return;
-            }
-        }
+		String filterChoice = scanner.nextLine();
 
-        com.seveneleven.mycontactapp.contact.composite.ContactGroup bulkGroup = 
-                new com.seveneleven.mycontactapp.contact.composite.ContactGroup();
+		java.util.function.Predicate<Contact> filterPredicate = null;
 
-        allContacts.stream()
-                   .filter(filterPredicate)
-                   .forEach(bulkGroup::addComponent); 
+		switch (filterChoice) {
+		case "1" -> filterPredicate = c -> true; 
+		case "2" -> filterPredicate = c -> c instanceof Person;
+		case "3" -> filterPredicate = c -> c instanceof Organization;
+		case "4" -> {
+			System.out.print("Enter starting letter(s): ");
+			String prefix = scanner.nextLine().toLowerCase();
+			filterPredicate = c -> c.getName().toLowerCase().startsWith(prefix);
+		}
+		case "0" ->{
+			System.out.println("Returning to contact dashboard...");
+			return;
+		}
+		default -> {
+			System.out.println("Invalid filter choice.");
+			return;
+		}
+		}
 
-        if (bulkGroup.getSize() == 0) {
-            System.out.println("No contacts matched your filter.");
-            return;
-        }
+		com.seveneleven.mycontactapp.contact.composite.ContactGroup bulkGroup = 
+				new com.seveneleven.mycontactapp.contact.composite.ContactGroup();
 
-        System.out.println("\nFound " + bulkGroup.getSize() + " matching contacts.");
-        System.out.println("Step 2: Select Action");
-        System.out.println("1. Export to CSV");
-        System.out.println("2. Add a Tag");
-        System.out.println("3. Soft Delete");
-        System.out.println("0. Cancel");
-        System.out.print("Enter choice: ");
-        
-        String actionChoice = scanner.nextLine();
-        
-        switch (actionChoice) {
-            case "1" -> {
-                ContactFileManager.saveExportFile(activeUser, bulkGroup);
-            }
-            case "2" -> {
-                System.out.print("Enter tag to apply: ");
-                String tag = scanner.nextLine();
-                bulkGroup.addTag(tag);
-                ContactFileManager.saveContacts(activeUser);
-                System.out.println("Tag applied to " + bulkGroup.getSize() + " contacts.");
-            }
-            case "3" -> {
-                bulkGroup.performBulkSoftDelete(activeUser);
-                ContactFileManager.saveContacts(activeUser);
-                System.out.println(bulkGroup.getSize() + " contacts moved to Recycle Bin.");
-            }
-            case "0" -> {
-                System.out.println("Bulk operation cancelled.");
-            }
-            default -> {
-                System.out.println("Invalid action choice.");
-            }
-        }
-    }
-	
+		allContacts.stream()
+		.filter(filterPredicate)
+		.forEach(bulkGroup::addComponent); 
+
+		if (bulkGroup.getSize() == 0) {
+			System.out.println("No contacts matched your filter.");
+			return;
+		}
+
+		System.out.println("\nFound " + bulkGroup.getSize() + " matching contacts.");
+		System.out.println("Step 2: Select Action");
+		System.out.println("1. Export to CSV");
+		System.out.println("2. Add a Tag");
+		System.out.println("3. Soft Delete");
+		System.out.println("0. Cancel");
+		System.out.print("Enter choice: ");
+
+		String actionChoice = scanner.nextLine();
+
+		switch (actionChoice) {
+		case "1" -> {
+			ContactFileManager.saveExportFile(activeUser, bulkGroup);
+		}
+		case "2" -> {
+			System.out.print("Enter tag to apply: ");
+			String tag = scanner.nextLine();
+			bulkGroup.addTag(tag);
+			ContactFileManager.saveContacts(activeUser);
+			System.out.println("Tag applied to " + bulkGroup.getSize() + " contacts.");
+		}
+		case "3" -> {
+			bulkGroup.performBulkSoftDelete(activeUser);
+			ContactFileManager.saveContacts(activeUser);
+			System.out.println(bulkGroup.getSize() + " contacts moved to Recycle Bin.");
+		}
+		case "0" -> {
+			System.out.println("Bulk operation cancelled.");
+		}
+		default -> {
+			System.out.println("Invalid action choice.");
+		}
+		}
+	}
+
 	/**
 	 * Create the search contact flow
 	 * 
 	 * @param activeUser	The current logged in user
 	 */
 	public static void handleSearchContactsFlow(User activeUser) {
-        List<Contact> contacts = activeUser.getContacts();
-        if (contacts.isEmpty()) {
-            System.out.println("\nYour address book is empty.");
-            return;
-        }
+		List<Contact> contacts = activeUser.getContacts();
+		if (contacts.isEmpty()) {
+			System.out.println("\nYour address book is empty.");
+			return;
+		}
 
-        System.out.println("\n--- Search Contacts ---");
-        System.out.println("1. Search by Name");
-        System.out.println("2. Search by Phone Number");
-        System.out.println("3. Search by Email");
-        System.out.print("Enter choice: ");
-        
-        String choice = scanner.nextLine();
-        System.out.print("Enter search term: ");
-        String query = scanner.nextLine();
+		System.out.println("\n--- Search Contacts ---");
+		System.out.println("1. Search by Name");
+		System.out.println("2. Search by Phone Number");
+		System.out.println("3. Search by Email");
+		System.out.println("0. Exit");
+		System.out.print("Enter choice: ");
 
-        SearchCriteria criteria;
+		String choice = scanner.nextLine();
+		System.out.print("Enter search term: ");
+		String query = scanner.nextLine();
 
-        switch (choice) {
-            case "1" -> criteria = new NameCriteria(query);
-            case "2" -> criteria = new PhoneCriteria(query);
-            case "3" -> criteria = new EmailCriteria(query);
-            default -> {
-                System.out.println("Invalid choice.");
-                return;
-            }
-        }
+		SearchCriteria criteria;
 
-        List<Contact> results = contacts.stream()
-                .filter(criteria)
-                .collect(Collectors.toList());
+		switch (choice) {
+		case "1" -> criteria = new NameCriteria(query);
+		case "2" -> criteria = new PhoneCriteria(query);
+		case "3" -> criteria = new EmailCriteria(query);
+		case "0" -> {
+			System.out.println("Returning to contact dashboard...");
+			return;
+		}
+		default -> {
+			System.out.println("Invalid choice.");
+			return;
+		}
+		}
 
-        System.out.println("\n--- Search Results (" + results.size() + " found) ---");
-        for (int i = 0; i < results.size(); i++) {
-            System.out.println("[" + (i + 1) + "] " + results.get(i).getName() + " (" + results.get(i).getContactType() + ")");
-        }
-        System.out.println("-----------------------");
-    }
-	
-	
+		List<Contact> results = contacts.stream()
+				.filter(criteria)
+				.collect(Collectors.toList());
+
+		System.out.println("\n--- Search Results (" + results.size() + " found) ---");
+		for (int i = 0; i < results.size(); i++) {
+			System.out.println("[" + (i + 1) + "] " + results.get(i).getName() + " (" + results.get(i).getContactType() + ")");
+		}
+		System.out.println("-----------------------");
+	}
+
+	/**
+	 * Create a menu to handle advanced contact flow
+	 * 
+	 * @param activeUser	The current user that is logged in
+	 */
+	public static void handleAdvancedFilterFlow(User activeUser) {
+		List<Contact> contacts = activeUser.getContacts();
+		if (contacts.isEmpty()) {
+			System.out.println("\nYour address book is empty.");
+			return;
+		}
+
+		List<SearchCriteria> activeFilters = new ArrayList<>();
+		boolean addingFilters = true;
+
+		System.out.println("\n--- Advanced Multi-Level Filtering ---");
+
+		while (addingFilters) {
+			System.out.println("\nCurrent Active Filters: " + activeFilters.size());
+			System.out.println("1. Add Tag Filter");
+			System.out.println("2. Add Date Added Filter (Last X days)");
+			System.out.println("3. Add Name Prefix Filter");
+			System.out.println("0. Done adding filters, proceed to sorting");
+			System.out.print("Choice: ");
+
+			String choice = scanner.nextLine();
+			switch (choice) {
+			case "1" -> {
+				System.out.print("Enter tag to filter by: ");
+				activeFilters.add(new TagCriteria(scanner.nextLine()));
+			}
+			case "2" -> {
+				System.out.print("Show contacts added in the last how many days?: ");
+				try {
+					activeFilters.add(new DateAddedCriteria(Integer.parseInt(scanner.nextLine())));
+				} catch (Exception e) {
+					System.out.println("Invalid number.");
+				}
+			}
+			case "3" -> {
+				System.out.print("Name starts with: ");
+				activeFilters.add(new NameCriteria(scanner.nextLine()));
+			}
+			case "0" -> addingFilters = false;
+			default -> System.out.println("Invalid choice.");
+			}
+		}
+
+
+		SearchCriteria compositeFilter = new AndCriteria(activeFilters);
+
+
+		System.out.println("\nSelect Sorting Strategy:");
+		System.out.println("1. Alphabetical (By Name)");
+		System.out.println("2. Newest First (By Date Added)");
+		System.out.print("Choice: ");
+
+		ContactSortStrategy sortStrategy;
+		if ("2".equals(scanner.nextLine())) {
+			sortStrategy = new SortByDateStrategy();
+		} else {
+			sortStrategy = new SortByNameStrategy(); 
+		}
+
+		List<Contact> results = contacts.stream()
+				.filter(compositeFilter) 
+				.collect(Collectors.toList());
+
+		sortStrategy.sort(results);
+
+		System.out.println("\n--- Filtered & Sorted Results (" + results.size() + " found) ---");
+		for (int i = 0; i < results.size(); i++) {
+			System.out.println("[" + (i + 1) + "] " + results.get(i).getName() 
+					+ " (Added: " + results.get(i).getTimeStamp().toLocalDate() + ")");
+			if (!results.get(i).getTags().isEmpty()) {
+				System.out.println("    Tags: " + results.get(i).getTags());
+			}
+		}
+		System.out.println("---------------------------------------");
+	}
+
 	/**
 	 * Handles the menu before the user is logged in
 	 * 
@@ -996,6 +1092,7 @@ public class MyContactsApp {
 			System.out.println("5. Recycle Bin (Restore Contacts)");
 			System.out.println("6. Perform bulk operations");
 			System.out.println("7. Search for contacts");
+			System.out.println("8. Advanced Search");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 
@@ -1030,7 +1127,11 @@ public class MyContactsApp {
 				handleSearchContactsFlow(activeUser);
 				yield true;
 			}
-			case "0" -> {
+			case "8" ->{
+				handleAdvancedFilterFlow(activeUser);
+				yield true;
+			}
+			case "0" ->{
 				System.out.println("Returning to dashboard...");
 				yield false;
 			}
