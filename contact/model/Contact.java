@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.seveneleven.mycontactapp.contact.composite.ContactComponent;
 import com.seveneleven.mycontactapp.contact.tag.Tag;
+import com.seveneleven.mycontactapp.contact.tag.TagAssignment;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -23,7 +24,8 @@ public abstract class Contact implements ContactComponent{
 	
 	private final List<PhoneNumber> phoneNumbers;
 	private final List<EmailAddress> emailAddresses;
-	protected final Set<Tag> tags;
+	private final Set<TagAssignment> tagAssignments;
+	
 	
 	/**
 	 * The constructor to create the contact object
@@ -36,7 +38,7 @@ public abstract class Contact implements ContactComponent{
 		this.name = name;
 		this.phoneNumbers = new ArrayList<>();
 		this.emailAddresses = new ArrayList<>();
-		this.tags = new HashSet<>();
+		this.tagAssignments = new HashSet<>();
 	}
 	
 	/**
@@ -52,7 +54,10 @@ public abstract class Contact implements ContactComponent{
 		// Defensive copy the lists
 		this.phoneNumbers = new ArrayList<>(source.getPhoneNumbers());
 		this.emailAddresses = new ArrayList<>(source.getEmailAddresses());
-		this.tags = new HashSet<>(source.getTags());
+		this.tagAssignments = new HashSet<>();
+		for(Tag tag : source.getTags()) {
+			this.addTag(tag);
+		}
 	}
 	
 	/**
@@ -101,9 +106,13 @@ public abstract class Contact implements ContactComponent{
 	/**
 	 * Method to get the list of tags associated with the contacts
 	 * 
-	 * @return	The list of tags (List\<String\>)
+	 * @return	The list of tags (List\<Tag\>)
 	 */
-	public Set<Tag> getTags() { return tags; }
+	public java.util.Set<Tag> getTags() { 
+        return tagAssignments.stream()
+                .map(TagAssignment::getTag)
+                .collect(java.util.stream.Collectors.toSet());
+    }
 	
 	/**
 	 * Method to add a phone number
@@ -164,7 +173,24 @@ public abstract class Contact implements ContactComponent{
      */
     @Override
     public void addTag(Tag tag) {
-    	this.tags.add(tag);
+        TagAssignment assignment = new TagAssignment(this, tag);
+        
+        if (this.tagAssignments.add(assignment)) { 
+            tag.addContactLink(this);
+        }
+    }
+    
+    /**
+     * Method to remove tags linked to the contact
+     * @param tag	The tag to be removed
+     */
+	public void removeTag(Tag tag) {
+        TagAssignment assignment = 
+            new TagAssignment(this, tag);
+        
+        if (this.tagAssignments.remove(assignment)) { 
+            tag.removeContactLink(this);
+        }
     }
     
     /**

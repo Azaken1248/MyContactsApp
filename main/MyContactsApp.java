@@ -43,6 +43,8 @@ import com.seveneleven.mycontactapp.user.command.UpdateUserNameCommand;
 
 import com.seveneleven.mycontactapp.contact.observer.ContactObserver;
 import com.seveneleven.mycontactapp.contact.observer.DeletionLogger;
+import com.seveneleven.mycontactapp.contact.observer.TagObserver;
+import com.seveneleven.mycontactapp.contact.observer.TagUpdateLogger;
 import com.seveneleven.mycontactapp.contact.search.AndCriteria;
 import com.seveneleven.mycontactapp.contact.search.DateAddedCriteria;
 import com.seveneleven.mycontactapp.contact.search.EmailCriteria;
@@ -71,7 +73,7 @@ import com.seveneleven.mycontactapp.user.validation.WeakPasswordException;
  * Main class that serves as the entry point to the my contacts application.
  * 
  * @author rsin3607
- * @version 1.0
+ * @version 12.0
  */
 public class MyContactsApp {
 
@@ -91,7 +93,16 @@ public class MyContactsApp {
 			observers.onContactDeleted(contact, isHardDelete);
 		}
 	}
+	
+    private static final List<TagObserver> tagObservers = 
+            new ArrayList<>(List.of(new TagUpdateLogger()));
 
+    private static void notifyTagObservers(Contact contact, Tag tag, boolean added) {
+        for (TagObserver obs : tagObservers) {
+            if (added) obs.onTagAdded(contact, tag);
+            else obs.onTagRemoved(contact, tag);
+        }
+    }
 	/**
 	 * Register the user to the application
 	 */
@@ -981,6 +992,72 @@ public class MyContactsApp {
             };
         }
     }
+	
+	/**
+	 * Method to handle tag application flow
+	 * 
+	 * @param activeUser	The current user logged in
+	 */
+	public static void handleApplyTagsToContactFlow(User activeUser) {
+        List<Contact> contacts = activeUser.getContacts();
+        if (contacts.isEmpty()) {
+            System.out.println("Your address book is empty.");
+            return;
+        }
+
+        for (int i = 0; i < contacts.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + contacts.get(i).getName());
+        }
+
+        System.out.print("\nEnter contact number to manage tags (0 to cancel): ");
+        try {
+            int choice = Integer.parseInt(scanner.nextLine());
+            if (choice == 0) return;
+
+            Contact selectedContact = contacts.get(choice - 1);
+            boolean managing = true;
+
+            while (managing) {
+                System.out.println("\n--- Managing Tags for: " + selectedContact.getName() + " ---");
+                System.out.println("Current Tags: ");
+                selectedContact.getTags().stream().forEach(t -> System.out.println(" - " + t.getName()));
+                
+                System.out.println("-----------------------------------");
+                System.out.println("1. Assign a Tag");
+                System.out.println("2. Remove a Tag");
+                System.out.println("0. Done");
+                System.out.print("Choice: ");
+
+                String action = scanner.nextLine();
+                
+                switch (action) {
+                    case "1" -> {
+                        System.out.print("Enter tag to assign: ");
+                        Tag tag = 
+                            TagFactory.getTag(scanner.nextLine());
+                        
+                        selectedContact.addTag(tag); 
+                        notifyTagObservers(selectedContact, tag, true);
+                    }
+                    case "2" -> {
+                        System.out.print("Enter tag to remove: ");
+                        	Tag tag = 
+                            TagFactory.getTag(scanner.nextLine());
+                        
+                        selectedContact.removeTag(tag);
+                        notifyTagObservers(selectedContact, tag, false);
+                    }
+                    case "0" -> managing = false;
+                    default -> System.out.println("Invalid choice.");
+                }
+            }
+            ContactFileManager.saveContacts(activeUser);
+            ContactFileManager.saveUserTags(activeUser);
+
+        } catch (Exception e) {
+            System.out.println("Invalid input.");
+        }
+    }
 
 	/**
 	 * Handles the menu before the user is logged in
@@ -1137,11 +1214,12 @@ public class MyContactsApp {
 			System.out.println("2. View a contact");
 			System.out.println("3. Edit a contact");
 			System.out.println("4. Delete a contact");
-			System.out.println("5. Recycle Bin (Restore Contacts)");
+			System.out.println("5. Recycle bin (Restore contacts)");
 			System.out.println("6. Perform bulk operations");
 			System.out.println("7. Search for contacts");
-			System.out.println("8. Advanced Search");
-			System.out.println("9. Tag Management");
+			System.out.println("8. Advanced search");
+			System.out.println("9. Tag management");
+			System.out.println("10 Apply tags");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 
@@ -1182,6 +1260,10 @@ public class MyContactsApp {
 			}
 			case "9" ->{
 				handleTagManagementFlow(activeUser);
+				yield true;
+			}
+			case "10" -> {
+				handleApplyTagsToContactFlow(activeUser);
 				yield true;
 			}
 			case "0" ->{

@@ -61,23 +61,34 @@ public class ContactFileManager {
 					.append(";");
 				}
 
+				// ✅ NEW: Pack the Tags using comma separation
+				StringBuilder tagStr = new StringBuilder();
+				for(Tag tag : contact.getTags()) {
+					tagStr.append(tag.getName()).append(",");
+				}
+				String finalTagStr = tagStr.length() > 0 ? tagStr.substring(0, tagStr.length() - 1) : "N/A";
+
 				String line = "";
 				if(contact.getContactType().equalsIgnoreCase("PERSON")) {
 					if(contact instanceof Person) {
 						Person p = (Person) contact;
-						line = String.format("PERSON|%s|%s|%s|%s",p.getName(),
+						// ✅ Added %s at the end for finalTagStr
+						line = String.format("PERSON|%s|%s|%s|%s|%s",p.getName(),
 								p.getRelationship(),
 								phoneStr,
-								emailStr);
+								emailStr,
+								finalTagStr);
 					}
 				}else {
 					if(contact instanceof Organization) {
 						Organization o = (Organization) contact;
-						line = String.format("ORGANIZATION|%s|%s|%s|%s|%s",o.getName(),
+						// ✅ Added %s at the end for finalTagStr
+						line = String.format("ORGANIZATION|%s|%s|%s|%s|%s|%s",o.getName(),
 								o.getWebsite(),
 								o.getIndustry(),
 								phoneStr,
-								emailStr);
+								emailStr,
+								finalTagStr);
 					}
 				}
 				writer.write(line);
@@ -91,8 +102,7 @@ public class ContactFileManager {
 
 	/**
 	 * Method to load user contacts from the file storage
-	 * 
-	 * @param user	The user for which the contacts are loaded
+	 * * @param user	The user for which the contacts are loaded
 	 */
 	public static void loadContacts(User user) {
 		File file_dir = generateFile(user);
@@ -107,6 +117,8 @@ public class ContactFileManager {
 
 				int phoneIdx = type.equalsIgnoreCase("PERSON") ? 3 : 4;
 				int emailIdx = type.equalsIgnoreCase("PERSON") ? 4 : 5;
+				// ✅ NEW: Calculate where the tag column should be
+				int tagIdx = type.equalsIgnoreCase("PERSON") ? 5 : 6; 
 
 				List<PhoneNumber> phoneNumbers = parsePhoneString(parts[phoneIdx]);
 				List<EmailAddress> emailAddresses = parseEmailString(parts[emailIdx]);
@@ -131,6 +143,20 @@ public class ContactFileManager {
 
 				for(EmailAddress emailAddress : emailAddresses) {
 					loadedContact.addEmailAddress(emailAddress);
+				}
+
+				// ✅ NEW (BACKWARD COMPATIBLE): Only process tags if the column exists in the save file
+				if (parts.length > tagIdx) {
+					String tagsString = parts[tagIdx];
+					if (!tagsString.equals("N/A") && !tagsString.trim().isEmpty()) {
+						String[] tagNames = tagsString.split(",");
+						for (String tName : tagNames) {
+							if (!tName.trim().isEmpty()) {
+								// Rebuilds the Flyweight and Association links
+								loadedContact.addTag(TagFactory.getTag(tName.trim()));
+							}
+						}
+					}
 				}
 
 				user.getContacts().add(loadedContact);
@@ -170,7 +196,8 @@ public class ContactFileManager {
 						 .append("Website,")
 						 .append("Industry,")
 					     .append("Phone Numbers,")
-					     .append("Emails")
+					     .append("Emails,")
+					     .append("Tags") // ✅ Added Tags column to CSV header
 					     .toString();
 			 
 			 writer.write(headers);
@@ -188,8 +215,7 @@ public class ContactFileManager {
 	
 	/**
 	 * Method to save the user tags in a file
-	 * 
-	 * @param activeUser	The current logged in user
+	 * * @param activeUser	The current logged in user
 	 */
     public static void saveUserTags(User activeUser) {
         String BASE_DIR = "./src/com/seveneleven/mycontactapp/contact/storage/";
@@ -212,8 +238,7 @@ public class ContactFileManager {
     
     /**
      * Method to load tags from the save file
-     * 
-     * @param activeUser	The current logged in user
+     * * @param activeUser	The current logged in user
      */
     public static void loadUserTags(User activeUser) {
         String BASE_DIR = "./src/com/seveneleven/mycontactapp/contact/storage/";
@@ -236,10 +261,8 @@ public class ContactFileManager {
 
 	/**
 	 * Helper method to parse phone number objects
-	 * 
-	 * @param phoneStr	Phone number objects string
-	 * 
-	 * @return	The List of parsed phone numbers (List\<PhoneNumber\>)
+	 * * @param phoneStr	Phone number objects string
+	 * * @return	The List of parsed phone numbers (List\<PhoneNumber\>)
 	 */
 	private static List<PhoneNumber> parsePhoneString(String phoneStr) {
 		List<PhoneNumber> phoneNumbers = new ArrayList<>();
@@ -264,10 +287,8 @@ public class ContactFileManager {
 
 	/**
 	 * Helper method to parse the email objects
-	 * 
-	 * @param emailStr	Email objects string
-	 * 
-	 * @return	The List of parsed emails (List\<EmailAddress\>)
+	 * * @param emailStr	Email objects string
+	 * * @return	The List of parsed emails (List\<EmailAddress\>)
 	 */
 	private static List<EmailAddress> parseEmailString(String emailStr) {
 		List<EmailAddress> emailAddresses = new ArrayList<>();
@@ -292,8 +313,7 @@ public class ContactFileManager {
 
 	/**
 	 * Helper method to get File path
-	 * 
-	 * @param user	The user who's directory is to be created
+	 * * @param user	The user who's directory is to be created
 	 * @return	The file object pointing to that directory
 	 */
 	private static File generateFile(User user) {

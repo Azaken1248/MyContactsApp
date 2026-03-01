@@ -3,6 +3,8 @@ package com.seveneleven.mycontactapp.contact.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.seveneleven.mycontactapp.contact.tag.Tag;
+
 /**
  * The class that represents an organization type of contact
  */
@@ -56,12 +58,6 @@ public class Organization extends Contact {
 	public String getIndustry() { return industry; }
 	
 	/**
-	 * Method to display a summary of all contact details
-	 * 
-	 * @return	The Summary of the contact (String)
-	 */
-	
-	/**
 	 * Method to set the website
 	 * 
 	 * @param website	The website to be set
@@ -76,8 +72,30 @@ public class Organization extends Contact {
 	 */
 	public void setIndustry(String industry) {this.industry = industry;}
 	
+	/**
+	 * Method to display a summary of all contact details
+	 * 
+	 * @return	The Summary of the contact (String)
+	 */
 	@Override
-	public String getContactSummary() { return getName() + "[" + industry + "|" + website + "]"; }
+	public String getContactSummary() { 
+		StringBuilder contactDetailsBuilder = new StringBuilder().append(getName())
+				.append("[")
+				.append(industry)
+				.append(website)
+				.append("]");
+		
+		contactDetailsBuilder.append("[");
+		for(Tag tag : getTags()) {
+			contactDetailsBuilder.append("[")
+			.append(tag.getName())
+			.append("]");
+		}
+		contactDetailsBuilder.append("]");
+
+		return contactDetailsBuilder.toString();
+
+	}
 	
 	/**
 	 * Method to get the type of contact

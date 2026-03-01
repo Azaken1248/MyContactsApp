@@ -1,12 +1,17 @@
 package com.seveneleven.mycontactapp.contact.tag;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+
+import com.seveneleven.mycontactapp.contact.model.Contact;
 
 /**
  * Tag class to represent a tag object
  */
 public class Tag {
 	private final String name;
+	private final Set<Contact> taggedContacts = new HashSet<>();
 	
 	/**
 	 * Contstructor to set tag name
@@ -27,6 +32,20 @@ public class Tag {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Method to add contact link
+	 */
+	public void addContactLink(Contact contact) {
+		this.taggedContacts.add(contact);
+	}
+	
+	/**
+	 * Method to remover contact link
+	 */
+	public void removeContactLink(Contact contact) {
+		this.taggedContacts.remove(contact);
 	}
 	
 	/**

@@ -1,2 +1,2 @@
-PERSON|Rohit|Friend|home,+919353958508;|personal,rohit@gmail.com;
-ORGANIZATION|7Eleven|https://7Eleven.com/|Retail||helpdesk,help@7-11.com;
+PERSON|Rohit|Friend|home,+919353958508;|personal,rohit@gmail.com;|WORK
+ORGANIZATION|7Eleven|https://7Eleven.com/|Retail||helpdesk,help@7-11.com;|N/A

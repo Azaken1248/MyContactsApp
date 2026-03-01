@@ -67,11 +67,14 @@ public class Person extends Contact {
 				.append("[")
 				.append(relationship)
 				.append("]");
-		for(Tag tag : tags) {
+		
+		contactDetailsBuilder.append("[");
+		for(Tag tag : getTags()) {
 			contactDetailsBuilder.append("[")
 			.append(tag.getName())
 			.append("]");
 		}
+		contactDetailsBuilder.append("]");
 
 		return contactDetailsBuilder.toString();
 
