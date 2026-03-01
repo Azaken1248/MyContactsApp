@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.seveneleven.mycontactapp.contact.tag.Tag;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -36,7 +37,7 @@ public class ContactGroup implements ContactComponent{
 	 * @param tag	The tag to add
 	 */
 	@Override
-	public void addTag(String tag) {
+	public void addTag(Tag tag) {
 		components.forEach(c -> c.addTag(tag));
 	}
 	

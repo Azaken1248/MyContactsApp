@@ -3,6 +3,8 @@ package com.seveneleven.mycontactapp.contact.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.seveneleven.mycontactapp.contact.tag.Tag;
+
 
 /**
  * The class that represents a person type of contact
@@ -65,9 +67,9 @@ public class Person extends Contact {
 				.append("[")
 				.append(relationship)
 				.append("]");
-		for(String tag : tags) {
+		for(Tag tag : tags) {
 			contactDetailsBuilder.append("[")
-			.append(tag)
+			.append(tag.getName())
 			.append("]");
 		}
 

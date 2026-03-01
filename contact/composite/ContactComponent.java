@@ -1,5 +1,6 @@
 package com.seveneleven.mycontactapp.contact.composite;
 
+import com.seveneleven.mycontactapp.contact.tag.Tag;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -11,7 +12,7 @@ public interface ContactComponent {
 	 * 
 	 * @param tag	The tag to be added
 	 */
-	void addTag(String tag);
+	void addTag(Tag tag);
 	
 	/**
 	 * An abstract method to export all contacts in this composition to a CSV

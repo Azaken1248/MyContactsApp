@@ -3,10 +3,13 @@ package com.seveneleven.mycontactapp.contact.model;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.seveneleven.mycontactapp.contact.composite.ContactComponent;
+import com.seveneleven.mycontactapp.contact.tag.Tag;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -20,7 +23,7 @@ public abstract class Contact implements ContactComponent{
 	
 	private final List<PhoneNumber> phoneNumbers;
 	private final List<EmailAddress> emailAddresses;
-	protected final List<String> tags;
+	protected final Set<Tag> tags;
 	
 	/**
 	 * The constructor to create the contact object
@@ -33,7 +36,7 @@ public abstract class Contact implements ContactComponent{
 		this.name = name;
 		this.phoneNumbers = new ArrayList<>();
 		this.emailAddresses = new ArrayList<>();
-		this.tags = new ArrayList<>();
+		this.tags = new HashSet<>();
 	}
 	
 	/**
@@ -49,7 +52,7 @@ public abstract class Contact implements ContactComponent{
 		// Defensive copy the lists
 		this.phoneNumbers = new ArrayList<>(source.getPhoneNumbers());
 		this.emailAddresses = new ArrayList<>(source.getEmailAddresses());
-		this.tags = new ArrayList<>(source.getTags());
+		this.tags = new HashSet<>(source.getTags());
 	}
 	
 	/**
@@ -100,7 +103,7 @@ public abstract class Contact implements ContactComponent{
 	 * 
 	 * @return	The list of tags (List\<String\>)
 	 */
-	public List<String> getTags() { return tags; }
+	public Set<Tag> getTags() { return tags; }
 	
 	/**
 	 * Method to add a phone number
@@ -160,10 +163,8 @@ public abstract class Contact implements ContactComponent{
      * @param tag	The tag to be added
      */
     @Override
-    public void addTag(String tag) {
-    	if(!(tag.isEmpty() || tags.contains(tag))){
-    		this.tags.add(tag);
-    	}
+    public void addTag(Tag tag) {
+    	this.tags.add(tag);
     }
     
     /**
