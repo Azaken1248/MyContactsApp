@@ -1,2 +1,2 @@
-ORGANIZATION|7Eleven|https://webite.7Eleven.com/|Restaurants|[helpdesk],+91775528889;|helpdesk,helpdesk@7Eleven.com;
-PERSON|devanand|boss||
+PERSON|Rohit|Friend|home,+919353958508;|personal,rohit@gmail.com;
+ORGANIZATION|7Eleven|https://7Eleven.com/|Retail||helpdesk,help@7-11.com;
