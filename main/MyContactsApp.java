@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import com.seveneleven.mycontactapp.auth.Authentication;
 
@@ -41,6 +42,10 @@ import com.seveneleven.mycontactapp.user.command.UpdateUserNameCommand;
 
 import com.seveneleven.mycontactapp.contact.observer.ContactObserver;
 import com.seveneleven.mycontactapp.contact.observer.DeletionLogger;
+import com.seveneleven.mycontactapp.contact.search.EmailCriteria;
+import com.seveneleven.mycontactapp.contact.search.NameCriteria;
+import com.seveneleven.mycontactapp.contact.search.PhoneCriteria;
+import com.seveneleven.mycontactapp.contact.search.SearchCriteria;
 import com.seveneleven.mycontactapp.user.model.User;
 import com.seveneleven.mycontactapp.user.model.UserBuilder;
 import com.seveneleven.mycontactapp.user.model.UserProfile;
@@ -786,6 +791,53 @@ public class MyContactsApp {
             }
         }
     }
+	
+	/**
+	 * Create the search contact flow
+	 * 
+	 * @param activeUser	The current logged in user
+	 */
+	public static void handleSearchContactsFlow(User activeUser) {
+        List<Contact> contacts = activeUser.getContacts();
+        if (contacts.isEmpty()) {
+            System.out.println("\nYour address book is empty.");
+            return;
+        }
+
+        System.out.println("\n--- Search Contacts ---");
+        System.out.println("1. Search by Name");
+        System.out.println("2. Search by Phone Number");
+        System.out.println("3. Search by Email");
+        System.out.print("Enter choice: ");
+        
+        String choice = scanner.nextLine();
+        System.out.print("Enter search term: ");
+        String query = scanner.nextLine();
+
+        SearchCriteria criteria;
+
+        switch (choice) {
+            case "1" -> criteria = new NameCriteria(query);
+            case "2" -> criteria = new PhoneCriteria(query);
+            case "3" -> criteria = new EmailCriteria(query);
+            default -> {
+                System.out.println("Invalid choice.");
+                return;
+            }
+        }
+
+        List<Contact> results = contacts.stream()
+                .filter(criteria)
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- Search Results (" + results.size() + " found) ---");
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + results.get(i).getName() + " (" + results.get(i).getContactType() + ")");
+        }
+        System.out.println("-----------------------");
+    }
+	
+	
 	/**
 	 * Handles the menu before the user is logged in
 	 * 
@@ -943,6 +995,7 @@ public class MyContactsApp {
 			System.out.println("4. Delete a contact");
 			System.out.println("5. Recycle Bin (Restore Contacts)");
 			System.out.println("6. Perform bulk operations");
+			System.out.println("7. Search for contacts");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 
@@ -971,6 +1024,10 @@ public class MyContactsApp {
 			}
 			case "6" ->{
 				handleBulkOperationsFlow(activeUser);
+				yield true;
+			}
+			case "7" ->{
+				handleSearchContactsFlow(activeUser);
 				yield true;
 			}
 			case "0" -> {
