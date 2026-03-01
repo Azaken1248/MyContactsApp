@@ -26,7 +26,8 @@ import com.seveneleven.mycontactapp.contact.model.Person;
 import com.seveneleven.mycontactapp.contact.model.PhoneNumber;
 
 import com.seveneleven.mycontactapp.contact.storage.ContactFileManager;
-
+import com.seveneleven.mycontactapp.contact.tag.Tag;
+import com.seveneleven.mycontactapp.contact.tag.TagFactory;
 import com.seveneleven.mycontactapp.contact.view.BasicContactView;
 import com.seveneleven.mycontactapp.contact.view.ContactView;
 import com.seveneleven.mycontactapp.contact.view.FullDetailsDecorator;
@@ -208,10 +209,12 @@ public class MyContactsApp {
 		Optional<User> loginResult = authStrategy.authenticate(email, secret);
 
 		if(loginResult.isPresent()) {
-			SessionManager.getInstance().loginUser(loginResult.get());
+			User loggedInUser = loginResult.get();
+			SessionManager.getInstance().loginUser(loggedInUser);
 			System.out.println("Login Successful");
-
-			ContactFileManager.loadContacts(SessionManager.getInstance().getCurrentUser().get());
+			
+			ContactFileManager.loadUserTags(loggedInUser);
+			ContactFileManager.loadContacts(loggedInUser);
 		}else {
 			System.out.println("Login Failed: Please enter valid credentials");
 		}
@@ -785,7 +788,7 @@ public class MyContactsApp {
 		case "2" -> {
 			System.out.print("Enter tag to apply: ");
 			String tag = scanner.nextLine();
-			bulkGroup.addTag(tag);
+			bulkGroup.addTag(TagFactory.getTag(tag));
 			ContactFileManager.saveContacts(activeUser);
 			System.out.println("Tag applied to " + bulkGroup.getSize() + " contacts.");
 		}
@@ -933,6 +936,51 @@ public class MyContactsApp {
 		}
 		System.out.println("---------------------------------------");
 	}
+	
+	/**
+	 * Method to handle the tag management flow
+	 */
+	public static void handleTagManagementFlow(User activeUser) {
+        boolean managingTags = true;
+
+        while (managingTags) {
+            System.out.println("\n--- Tag Management ---");
+            System.out.println("Available System Tags:");
+            
+            for (Tag tag : TagFactory.getAllAvailableTags()) {
+                System.out.println("- " + tag.getName());
+            }
+            
+            System.out.println("----------------------");
+            System.out.println("1. Create a new custom tag");
+            System.out.println("0. Return to menu");
+            System.out.print("Choice: ");
+
+            String choice = scanner.nextLine();
+
+            managingTags = switch (choice) {
+                case "1" -> {
+                    System.out.print("Enter new tag name: ");
+                    String newTagName = scanner.nextLine();
+                    try {
+                        Tag newTag = TagFactory.getTag(newTagName);
+                        
+                        ContactFileManager.saveUserTags(activeUser);
+                        
+                        System.out.println("Success! Tag '" + newTag.getName() + "' added to the system pool.");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                    yield true;
+                }
+                case "0" -> false;
+                default -> {
+                    System.out.println("Invalid choice.");
+                    yield true;
+                }
+            };
+        }
+    }
 
 	/**
 	 * Handles the menu before the user is logged in
@@ -1093,6 +1141,7 @@ public class MyContactsApp {
 			System.out.println("6. Perform bulk operations");
 			System.out.println("7. Search for contacts");
 			System.out.println("8. Advanced Search");
+			System.out.println("9. Tag Management");
 			System.out.println("0. Back to user dashboard");
 			System.out.print("Enter Choice: ");
 
@@ -1129,6 +1178,10 @@ public class MyContactsApp {
 			}
 			case "8" ->{
 				handleAdvancedFilterFlow(activeUser);
+				yield true;
+			}
+			case "9" ->{
+				handleTagManagementFlow(activeUser);
 				yield true;
 			}
 			case "0" ->{
