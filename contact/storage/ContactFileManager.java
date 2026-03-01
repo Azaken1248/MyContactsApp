@@ -17,6 +17,8 @@ import com.seveneleven.mycontactapp.contact.model.EmailAddress;
 import com.seveneleven.mycontactapp.contact.model.Organization;
 import com.seveneleven.mycontactapp.contact.model.Person;
 import com.seveneleven.mycontactapp.contact.model.PhoneNumber;
+import com.seveneleven.mycontactapp.contact.tag.Tag;
+import com.seveneleven.mycontactapp.contact.tag.TagFactory;
 import com.seveneleven.mycontactapp.user.model.User;
 
 /**
@@ -183,6 +185,54 @@ public class ContactFileManager {
 		}
 
 	}
+	
+	/**
+	 * Method to save the user tags in a file
+	 * 
+	 * @param activeUser	The current logged in user
+	 */
+    public static void saveUserTags(User activeUser) {
+        String BASE_DIR = "./src/com/seveneleven/mycontactapp/contact/storage/";
+        String safeEmail = activeUser.getEmail().replace("@", "_").replace(".", "_");
+        File tagsFile = new File(BASE_DIR + safeEmail + "/tags.txt");
+
+        if (tagsFile.getParentFile() != null && !tagsFile.getParentFile().exists()) {
+            tagsFile.getParentFile().mkdirs();
+        }
+
+        try (BufferedWriter writer = new java.io.BufferedWriter(new FileWriter(tagsFile))) {
+            for (Tag tag : TagFactory.getAllAvailableTags()) {
+                writer.write(tag.getName());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving user tags: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Method to load tags from the save file
+     * 
+     * @param activeUser	The current logged in user
+     */
+    public static void loadUserTags(User activeUser) {
+        String BASE_DIR = "./src/com/seveneleven/mycontactapp/contact/storage/";
+        String safeEmail = activeUser.getEmail().replace("@", "_").replace(".", "_");
+        File tagsFile = new java.io.File(BASE_DIR + safeEmail + "/tags.txt");
+
+        if (!tagsFile.exists()) return; 
+
+        try (BufferedReader reader = new java.io.BufferedReader(new FileReader(tagsFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    TagFactory.getTag(line);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading user tags: " + e.getMessage());
+        }
+    }
 
 	/**
 	 * Helper method to parse phone number objects
