@@ -3,13 +3,14 @@ package com.seveneleven.mycontactapp.contact.model;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * The class that represents a person type of contact
  */
 public class Person extends Contact {
-	
+
 	private String relationship;
-	
+
 	/**
 	 * Construtor to create a new Person object using the person builder
 	 * 
@@ -18,16 +19,16 @@ public class Person extends Contact {
 	protected Person(PersonBuilder builder) {
 		super(builder.name);
 		this.relationship = builder.relationship;
-		
+
 		for(PhoneNumber phoneNumber : builder.phones) {
 			this.addPhoneNumber(phoneNumber);
 		}
-		
+
 		for(EmailAddress emailAddress : builder.emails) {
 			this.addEmailAddress(emailAddress);
 		}
 	}
-	
+
 	/**
 	 * Copy constructor
 	 * 
@@ -37,14 +38,14 @@ public class Person extends Contact {
 		super(source);
 		this.relationship = source.relationship;
 	}
-	
+
 	/**
 	 * Method to get the relationship of the contact
 	 * 
 	 * @return	The relationship of the contact (String)
 	 */
 	public String getRelationship() { return relationship; }
-	
+
 	/**
 	 * Method to set the relationship
 	 * @param relationship	The relationship to set
@@ -52,15 +53,28 @@ public class Person extends Contact {
 	public void setRelationship(String relationship) {
 		this.relationship = relationship;
 	}
-	
+
 	/**
 	 * Method to display a summary of all contact details
 	 * 
 	 * @return	The Summary of the contact (String)
 	 */
 	@Override
-	public String getContactSummary() { return getName() + "[" + relationship  + "]"; }
-	
+	public String getContactSummary() { 
+		StringBuilder contactDetailsBuilder = new StringBuilder().append(getName())
+				.append("[")
+				.append(relationship)
+				.append("]");
+		for(String tag : tags) {
+			contactDetailsBuilder.append("[")
+			.append(tag)
+			.append("]");
+		}
+
+		return contactDetailsBuilder.toString();
+
+	}
+
 	/**
 	 * Method to get the type of contact
 	 * 
@@ -68,7 +82,7 @@ public class Person extends Contact {
 	 */
 	@Override
 	public String getContactType() { return "PERSON"; }
-	
+
 	/**
 	 * method to copy the contact
 	 * 
@@ -78,17 +92,46 @@ public class Person extends Contact {
 	public Contact copy() {
 		return new Person(this);
 	}
-	
+
+	/**
+	 * Method to export the current contact row to a CSV String
+	 * 
+	 * @param activeUser	The current logged in user
+	 */
+	@Override
+	public String exportToCSV(){
+		StringBuilder phoneStrBuilder = new StringBuilder();
+		for(PhoneNumber phoneNumber : getPhoneNumbers()) {
+			phoneStrBuilder.append(phoneNumber.toString())
+			.append("|");
+		}
+
+		StringBuilder emailStrBuilder = new StringBuilder();
+		for(EmailAddress emailAddress : getEmailAddresses()) {
+			emailStrBuilder.append(emailAddress.toString())
+			.append("|");
+		}
+
+		return String.format("%s,%s,%s,%s,%s,N/A,N/A,%s,%s", getId(),
+				getContactType(),
+				getTimeStamp().toLocalDate(),
+				getName(),
+				relationship,
+				phoneStrBuilder.toString(),
+				emailStrBuilder.toString());
+	}
+
+
 	/**
 	 * Inner builder class to build a person object
 	 */
 	public static class PersonBuilder {
 		String name;
 		String relationship = "Aquaintance";
-		
+
 		private final List<PhoneNumber> phones = new ArrayList<>();
 		private final List<EmailAddress> emails = new ArrayList<>();
-		
+
 		/**
 		 * Method to set the name of the instance
 		 * 
@@ -100,7 +143,7 @@ public class Person extends Contact {
 			this.name = name;
 			return this;
 		}
-		
+
 		/**
 		 * Method to set the relationship of the instance
 		 * 
@@ -112,7 +155,7 @@ public class Person extends Contact {
 			this.relationship = relationship;
 			return this;
 		}
-		
+
 		/**
 		 * Method to add the phone numbers to the person
 		 * 
@@ -124,7 +167,7 @@ public class Person extends Contact {
 			phones.add(phoneNumber);
 			return this;
 		}
-		
+
 		/**
 		 * Method to add the emails to the person
 		 * 
@@ -136,7 +179,7 @@ public class Person extends Contact {
 			emails.add(emailAddress);
 			return this;
 		}
-		
+
 		/**
 		 * The method to build the person object
 		 * 

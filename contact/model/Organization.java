@@ -98,6 +98,35 @@ public class Organization extends Contact {
 	}
 	
 	/**
+	 * Method to export the current contact row to a CSV String
+	 * 
+	 * @param activeUser	The current logged in user
+	 */
+	@Override
+	public String exportToCSV(){
+		StringBuilder phoneStrBuilder = new StringBuilder();
+		 for(PhoneNumber phoneNumber : getPhoneNumbers()) {
+			 phoneStrBuilder.append(phoneNumber.toString())
+			 				.append("|");
+		 }
+		 
+		 StringBuilder emailStrBuilder = new StringBuilder();
+		 for(EmailAddress emailAddress : getEmailAddresses()) {
+			 emailStrBuilder.append(emailAddress.toString())
+			 				.append("|");
+		 }
+		 
+		 return String.format("%s,%s,%s,%s,N/A,%s,%s,%s,%s", getId(),
+				 											  getContactType(),
+				 											  getTimeStamp().toLocalDate(),
+				 											  getName(),
+				 											  website,
+				 											  industry,
+				 											  phoneStrBuilder.toString(),
+				 											  emailStrBuilder.toString());
+	}
+	
+	/**
 	 * Inner builder class to build a organization object
 	 */
 	public static class OrganizationBuilder {
