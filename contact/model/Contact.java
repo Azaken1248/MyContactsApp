@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.seveneleven.mycontactapp.contact.composite.ContactComponent;
+import com.seveneleven.mycontactapp.user.model.User;
+
 /**
  * Abstract class that represents a contact 
  */
-public abstract class Contact {
+public abstract class Contact implements ContactComponent{
 	private final UUID id;
 	private final LocalDateTime createdAt;
 	
@@ -17,6 +20,7 @@ public abstract class Contact {
 	
 	private final List<PhoneNumber> phoneNumbers;
 	private final List<EmailAddress> emailAddresses;
+	protected final List<String> tags;
 	
 	/**
 	 * The constructor to create the contact object
@@ -29,6 +33,7 @@ public abstract class Contact {
 		this.name = name;
 		this.phoneNumbers = new ArrayList<>();
 		this.emailAddresses = new ArrayList<>();
+		this.tags = new ArrayList<>();
 	}
 	
 	/**
@@ -44,6 +49,7 @@ public abstract class Contact {
 		// Defensive copy the lists
 		this.phoneNumbers = new ArrayList<>(source.getPhoneNumbers());
 		this.emailAddresses = new ArrayList<>(source.getEmailAddresses());
+		this.tags = new ArrayList<>(source.getTags());
 	}
 	
 	/**
@@ -88,7 +94,13 @@ public abstract class Contact {
 	 * @return	The list of email addresses (List\<EmailAddress\>)
 	 */
 	public List<EmailAddress> getEmailAddresses() { return emailAddresses; }
-
+	
+	/**
+	 * Method to get the list of tags associated with the contacts
+	 * 
+	 * @return	The list of tags (List\<String\>)
+	 */
+	public List<String> getTags() { return tags; }
 	
 	/**
 	 * Method to add a phone number
@@ -140,6 +152,37 @@ public abstract class Contact {
     public void cascadeDelete() {
     	this.phoneNumbers.clear();
     	this.emailAddresses.clear();
+    }
+    
+    /**
+     * Method to add tags to the contact
+     * 
+     * @param tag	The tag to be added
+     */
+    @Override
+    public void addTag(String tag) {
+    	if(!(tag.isEmpty() || tags.contains(tag))){
+    		this.tags.add(tag);
+    	}
+    }
+    
+    /**
+     * Method to export contacts to CSV
+     * 
+     * @param activeUser The current logged in user
+     */
+    @Override
+    public abstract String exportToCSV() ;
+    
+    /**
+     * Method to perform a bulk delete
+     * 
+     * @param activeUser	The current user logged in
+     */
+    @Override
+    public void performBulkSoftDelete(User activeUser) {
+    	activeUser.getContacts().remove(this);
+    	activeUser.getRecycleBin().add(this);
     }
 	/**
 	 * Abstract method to display a summary of all contact details
