@@ -2,13 +2,13 @@
 
 A console-driven contact management system using the concepts of OOPS in java.
 
-## [Use Case 1](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC1-MyContacts)
+## [Use Case 1](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC1-MyContacts)
 
 To create an account with email, password, and profile information.
 
 #### key concept
 
-(1) Using Builder and Factory Patterns to create User objects ([UserBuilder](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/model/UserBuilder.java))
+(1) Using Builder and Factory Patterns to create User objects ([UserBuilder](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/model/UserBuilder.java))
 
 ```java
 public User build() {
@@ -17,7 +17,7 @@ public User build() {
 
 ```
 
-(2) Validating user input using Regex ([UserValidator](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/validation/UserValidator.java))
+(2) Validating user input using Regex ([UserValidator](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/validation/UserValidator.java))
 
 ```java
 public static void validateEmail(String email) throws InvalidEmailException{
@@ -35,7 +35,7 @@ public static void validateEmail(String email) throws InvalidEmailException{
 
 ```
 
-(3) Hashing passwords securely before storage ([PasswordHasher](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/utilities/PasswordHasher.java))
+(3) Hashing passwords securely before storage ([PasswordHasher](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC1-MyContacts/user/utilities/PasswordHasher.java))
 
 ```java
 MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -43,13 +43,13 @@ byte[] hashBytes = digest.digest(password.getBytes());
 
 ```
 
-## [Use Case 2](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC2-MyContacts)
+## [Use Case 2](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC2-MyContacts)
 
 To log in with credentials to access the contact list.
 
 #### key concept
 
-(1) Strategy pattern for flexible authentication algorithms ([Authentication](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/Authentication.java))
+(1) Strategy pattern for flexible authentication algorithms ([Authentication](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/Authentication.java))
 
 ```java
 public interface Authentication {
@@ -58,7 +58,7 @@ public interface Authentication {
 
 ```
 
-(2) Concrete implementation for Basic Authentication ([BasicAuthStrategy](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/strategy/BasicAuthStrategy.java))
+(2) Concrete implementation for Basic Authentication ([BasicAuthStrategy](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/strategy/BasicAuthStrategy.java))
 
 ```java
 public Optional<User> authenticate(String email, String rawPassword){
@@ -76,7 +76,7 @@ public Optional<User> authenticate(String email, String rawPassword){
 
 ```
 
-(3) Singleton session manager to hold the active user context ([SessionManager](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/session/SessionManager.java))
+(3) Singleton session manager to hold the active user context ([SessionManager](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC2-MyContacts/auth/session/SessionManager.java))
 
 ```java
 public static SessionManager getInstance() {
@@ -88,13 +88,13 @@ public static SessionManager getInstance() {
 
 ```
 
-## [Use Case 3](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC3-MyContacts)
+## [Use Case 3](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC3-MyContacts)
 
 To update profile information, change password, or manage preferences.
 
 #### key concept
 
-(1) Command pattern to encapsulate profile update operations ([ProfileCommand](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/ProfileCommand.java))
+(1) Command pattern to encapsulate profile update operations ([ProfileCommand](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/ProfileCommand.java))
 
 ```java
 public interface ProfileCommand {
@@ -104,7 +104,7 @@ public interface ProfileCommand {
 
 ```
 
-(2) Concrete command for updating user bio with undo functionality ([UpdateBioCommand](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/UpdateBioCommand.java))
+(2) Concrete command for updating user bio with undo functionality ([UpdateBioCommand](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/UpdateBioCommand.java))
 
 ```java
 public void execute() {
@@ -122,7 +122,7 @@ public void undo() {
 
 ```
 
-(3) Controller to manage command execution and history stack ([ProfileUpdateController](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/ProfileUpdateController.java))
+(3) Controller to manage command execution and history stack ([ProfileUpdateController](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC3-MyContacts/user/command/ProfileUpdateController.java))
 
 ```java
 public static void executeCommand(ProfileCommand profileCommand) {
@@ -144,13 +144,13 @@ public static void undoCommand() {
 
 ```
 
-## [Use Case 4](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC4-MyContacts)
+## [Use Case 4](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC4-MyContacts)
 
 To add a new contact with name, phone numbers, email addresses, and optional fields.
 
 #### key concept
 
-(1) Contact hierarchy abstracting common properties from concrete implementations ([Contact](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC4-MyContacts/contact/model/Contact.java))
+(1) Contact hierarchy abstracting common properties from concrete implementations ([Contact](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC4-MyContacts/contact/model/Contact.java))
 
 ```java
 public abstract class Contact implements ContactComponent {
@@ -162,7 +162,7 @@ public abstract class Contact implements ContactComponent {
 
 ```
 
-(2) Using the Builder pattern for constructing complex contact types ([Person](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC4-MyContacts/contact/model/Person.java))
+(2) Using the Builder pattern for constructing complex contact types ([Person](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC4-MyContacts/contact/model/Person.java))
 
 ```java
 public static class PersonBuilder {
@@ -178,13 +178,13 @@ public static class PersonBuilder {
 
 ```
 
-## [Use Case 5](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC5-MyContacts)
+## [Use Case 5](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC5-MyContacts)
 
 To view complete information of a specific contact.
 
 #### key concept
 
-(1) Decorator pattern to dynamically augment contact display representations ([ContactViewDecorator](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC5-MyContacts/contact/view/ContactViewDecorator.java))
+(1) Decorator pattern to dynamically augment contact display representations ([ContactViewDecorator](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC5-MyContacts/contact/view/ContactViewDecorator.java))
 
 ```java
 public class ContactViewDecorator implements ContactView {
@@ -204,7 +204,7 @@ public class ContactViewDecorator implements ContactView {
 
 ```
 
-(2) Concrete decorator appending formatted metadata ([MetadataDecorator](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC5-MyContacts/contact/view/MetadataDecorator.java))
+(2) Concrete decorator appending formatted metadata ([MetadataDecorator](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC5-MyContacts/contact/view/MetadataDecorator.java))
 
 ```java
 public String display() {
@@ -222,13 +222,13 @@ public String display() {
 
 ```
 
-## [Use Case 6](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC6-MyContacts)
+## [Use Case 6](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC6-MyContacts)
 
 To modify existing contact information.
 
 #### key concept
 
-(1) Memento pattern to preserve the state of an object prior to mutation ([ContactMemento](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC6-MyContacts/contact/command/ContactMemento.java))
+(1) Memento pattern to preserve the state of an object prior to mutation ([ContactMemento](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC6-MyContacts/contact/command/ContactMemento.java))
 
 ```java
 public class ContactMemento {
@@ -245,7 +245,7 @@ public class ContactMemento {
 
 ```
 
-(2) Command pattern combining edits with Memento states for reliable rollbacks ([EditContactCommand](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC6-MyContacts/contact/command/EditContactCommand.java))
+(2) Command pattern combining edits with Memento states for reliable rollbacks ([EditContactCommand](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC6-MyContacts/contact/command/EditContactCommand.java))
 
 ```java
 public void execute() {
@@ -263,13 +263,13 @@ public void undo() {
 
 ```
 
-## [Use Case 7](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC7-MyContacts)
+## [Use Case 7](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC7-MyContacts)
 
 To remove a contact from the list with confirmation.
 
 #### key concept
 
-(1) Observer pattern to broadcast deletion events across the system ([ContactObserver](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/observer/ContactObserver.java))
+(1) Observer pattern to broadcast deletion events across the system ([ContactObserver](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/observer/ContactObserver.java))
 
 ```java
 public interface ContactObserver {
@@ -278,7 +278,7 @@ public interface ContactObserver {
 
 ```
 
-(2) Concrete observer for system logging of lifecycle events ([DeletionLogger](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/observer/DeletionLogger.java))
+(2) Concrete observer for system logging of lifecycle events ([DeletionLogger](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/observer/DeletionLogger.java))
 
 ```java
 public void onContactDeleted(Contact contact, boolean isHardDelete) {
@@ -288,7 +288,7 @@ public void onContactDeleted(Contact contact, boolean isHardDelete) {
 
 ```
 
-(3) Method implementation to clear aggregated objects upon deletion ([Contact](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/model/Contact.java))
+(3) Method implementation to clear aggregated objects upon deletion ([Contact](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC7-MyContacts/contact/model/Contact.java))
 
 ```java
 public void cascadeDelete() {
@@ -298,13 +298,13 @@ public void cascadeDelete() {
 
 ```
 
-## [Use Case 8](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC8-MyContacts)
+## [Use Case 8](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC8-MyContacts)
 
 To perform operations on multiple contacts.
 
 #### key concept
 
-(1) Composite pattern enabling uniform treatment of individual entities and collections ([ContactGroup](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC8-MyContacts/contact/composite/ContactGroup.java))
+(1) Composite pattern enabling uniform treatment of individual entities and collections ([ContactGroup](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC8-MyContacts/contact/composite/ContactGroup.java))
 
 ```java
 public class ContactGroup implements ContactComponent {
@@ -325,7 +325,7 @@ public class ContactGroup implements ContactComponent {
 
 ```
 
-(2) Executing recursive structural operations using the Stream API ([ContactGroup](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC8-MyContacts/contact/composite/ContactGroup.java))
+(2) Executing recursive structural operations using the Stream API ([ContactGroup](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC8-MyContacts/contact/composite/ContactGroup.java))
 
 ```java
 public void performBulkSoftDelete(User actveUser){
@@ -334,13 +334,13 @@ public void performBulkSoftDelete(User actveUser){
 
 ```
 
-## [Use Case 9](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC9-MyContacts)
+## [Use Case 9](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC9-MyContacts)
 
 To search contacts by name, phone, email, or tags.
 
 #### key concept
 
-(1) Specification pattern extending Predicate for querying ([SearchCriteria](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/contact/search/SearchCriteria.java))
+(1) Specification pattern extending Predicate for querying ([SearchCriteria](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/contact/search/SearchCriteria.java))
 
 ```java
 public interface SearchCriteria extends Predicate<Contact>{
@@ -349,7 +349,7 @@ public interface SearchCriteria extends Predicate<Contact>{
 
 ```
 
-(2) Implementation of criteria via case-insensitive regex evaluation ([NameCriteria](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/contact/search/NameCriteria.java))
+(2) Implementation of criteria via case-insensitive regex evaluation ([NameCriteria](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/contact/search/NameCriteria.java))
 
 ```java
 public class NameCriteria implements SearchCriteria{
@@ -367,7 +367,7 @@ public class NameCriteria implements SearchCriteria{
 
 ```
 
-(3) Functional processing through stream filters ([MyContactsApp](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/main/MyContactsApp.java))
+(3) Functional processing through stream filters ([MyContactsApp](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC9-MyContacts/main/MyContactsApp.java))
 
 ```java
 List<Contact> results = contacts.stream()
@@ -376,13 +376,13 @@ List<Contact> results = contacts.stream()
 
 ```
 
-## [Use Case 10](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC10-MyContacts)
+## [Use Case 10](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC10-MyContacts)
 
 To apply multiple filters by tag, date added, and frequently contacted.
 
 #### key concept
 
-(1) Chain of Responsibility pattern mapping compound logical conditions ([AndCriteria](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/search/AndCriteria.java))
+(1) Chain of Responsibility pattern mapping compound logical conditions ([AndCriteria](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/search/AndCriteria.java))
 
 ```java
 public class AndCriteria implements SearchCriteria{
@@ -405,7 +405,7 @@ public class AndCriteria implements SearchCriteria{
 
 ```
 
-(2) Strategy pattern governing distinct sorting algorithms ([ContactSortStrategy](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/sort/ContactSortStrategy.java))
+(2) Strategy pattern governing distinct sorting algorithms ([ContactSortStrategy](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/sort/ContactSortStrategy.java))
 
 ```java
 public interface ContactSortStrategy {
@@ -414,7 +414,7 @@ public interface ContactSortStrategy {
 
 ```
 
-(3) Implementation comparing domain-specific fields ([SortByDateStrategy](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/sort/SortByDateStrategy.java))
+(3) Implementation comparing domain-specific fields ([SortByDateStrategy](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC10-MyContacts/contact/sort/SortByDateStrategy.java))
 
 ```java
 public void sort(List<Contact> contacts) {
@@ -423,13 +423,13 @@ public void sort(List<Contact> contacts) {
 
 ```
 
-## [Use Case 11](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC11-MyContacts)
+## [Use Case 11](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC11-MyContacts)
 
 To create custom tags for organizing contacts.
 
 #### key concept
 
-(1) Flyweight pattern to centralize instances and eliminate redundancy in memory ([TagFactory](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/TagFactory.java))
+(1) Flyweight pattern to centralize instances and eliminate redundancy in memory ([TagFactory](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/TagFactory.java))
 
 ```java
 public class TagFactory {
@@ -447,7 +447,7 @@ public class TagFactory {
 
 ```
 
-(2) Overriding equals and hashcode to ensure hashing reliability for sets ([Tag](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/Tag.java))
+(2) Overriding equals and hashcode to ensure hashing reliability for sets ([Tag](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/Tag.java))
 
 ```java
 @Override
@@ -466,7 +466,7 @@ public int hashCode() {
 
 ```
 
-(3) Seeding predefined classifications leveraging EnumSet ([TagFactory](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/TagFactory.java))
+(3) Seeding predefined classifications leveraging EnumSet ([TagFactory](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC11-MyContacts/contact/tag/TagFactory.java))
 
 ```java
 static {
@@ -478,13 +478,13 @@ static {
 
 ```
 
-## [Use Case 12](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/feature/UC12-MyContacts)
+## [Use Case 12](https://github.com/Azaken1248/MyContactsApp/tree/feature/UC12-MyContacts)
 
 To assign one or multiple tags to contacts.
 
 #### key concept
 
-(1) Association class constructing a many-to-many link ([TagAssignment](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC12-MyContacts/contact/tag/TagAssignment.java))
+(1) Association class constructing a many-to-many link ([TagAssignment](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC12-MyContacts/contact/tag/TagAssignment.java))
 
 ```java
 public class TagAssignment {
@@ -501,7 +501,7 @@ public class TagAssignment {
 
 ```
 
-(2) Bidirectional mapping management dictating the relationship flow ([Contact](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/blob/feature/UC12-MyContacts/contact/model/Contact.java))
+(2) Bidirectional mapping management dictating the relationship flow ([Contact](https://github.com/Azaken1248/MyContactsApp/blob/feature/UC12-MyContacts/contact/model/Contact.java))
 
 ```java
 @Override
@@ -519,6 +519,6 @@ public void addTag(Tag tag) {
 
 Each feature is developed on a seperate branch and after testing it is
 
-moved to [dev](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp/tree/dev)
+moved to [dev](https://github.com/Azaken1248/MyContactsApp/tree/dev)
 
-after which it is finally released to [main](https://www.google.com/search?q=https://github.com/Azaken1248/MyContactsApp)
+after which it is finally released to [main](https://github.com/Azaken1248/MyContactsApp)
